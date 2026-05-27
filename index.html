@@ -104,11 +104,11 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 </head>
 <body>
 <!-- SECTION BREAK OVERLAY -->
-<div id="sb-overlay" style="position:fixed;inset:0;z-index:500;background:#f8f6f1;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s">
+<div id="sb-overlay" style="position:fixed;inset:0;z-index:500;background:#f8f6f1;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s">
   <div id="sb-label" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#b8860b;margin-bottom:12px;display:flex;align-items:center;gap:12px">Section</div>
   <div id="sb-title" style="font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,12vw,80px);color:#1a1612;line-height:.9">Basic Info</div>
 </div>
-<style>#sb-overlay.active{opacity:1;pointer-events:all}</style>
+
 
 <div id="progress-wrap"><div id="progress-fill"></div></div>
 <div id="logo">KABA LABS</div>
@@ -437,8 +437,13 @@ function showSectionBreak(sb) {
   if (!wrap) return;
   document.getElementById('sb-label').textContent = sb.label;
   document.getElementById('sb-title').textContent = sb.title;
-  wrap.classList.add('active');
-  setTimeout(() => { wrap.classList.remove('active'); }, 1400);
+  // Force reflow then show
+  wrap.style.opacity = '1';
+  wrap.style.pointerEvents = 'all';
+  setTimeout(() => {
+    wrap.style.opacity = '0';
+    wrap.style.pointerEvents = 'none';
+  }, 900);
 }
 
 // ── NAV ──
@@ -452,12 +457,10 @@ function goNext() {
 
   // Check if this step has a section break before it
   const sb = sectionBeforeStep[step];
+  showScreen(step);
+  chk();
   if (sb) {
     showSectionBreak(sb);
-    setTimeout(() => { showScreen(step); checkRequired(); }, 200);
-  } else {
-    showScreen(step);
-    checkRequired();
   }
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
@@ -469,7 +472,7 @@ function goBack() {
   updateProgress();
   updateCounter();
   showScreen(step);
-  checkRequired();
+  if (step !== 'welcome' && step !== 'done') chk();
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
@@ -512,11 +515,11 @@ function sel(el, grp, single) {
     ans[grp] = [...document.querySelectorAll('[data-grp="' + grp + '"].selected')]
       .map(e => e.querySelector('.q-opt-label').textContent.trim());
   }
-  checkRequired();
+  chk();
 }
 
 // ── REQUIRED CHECK ──
-function checkRequired() {
+function chk() {
   const step = flow[cur];
   if (!step || step === 'welcome' || step === 'done') return;
   const screen = document.getElementById('s-' + step);
@@ -637,7 +640,7 @@ function setLang(l) {
 }
 
 // ── INIT ──
-showScreen('welcome');
+// Welcome screen is already active via HTML class, just update UI
 updateProgress();
 updateCounter();
 </script>
