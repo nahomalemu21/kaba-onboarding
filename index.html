@@ -103,6 +103,13 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 </style>
 </head>
 <body>
+<!-- SECTION BREAK OVERLAY -->
+<div id="sb-overlay" style="position:fixed;inset:0;z-index:500;background:#f8f6f1;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s">
+  <div id="sb-label" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#b8860b;margin-bottom:12px;display:flex;align-items:center;gap:12px">Section</div>
+  <div id="sb-title" style="font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,12vw,80px);color:#1a1612;line-height:.9">Basic Info</div>
+</div>
+<style>#sb-overlay.active{opacity:1;pointer-events:all}</style>
+
 <div id="progress-wrap"><div id="progress-fill"></div></div>
 <div id="logo">KABA LABS</div>
 <div id="lang-bar">
@@ -114,7 +121,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 <div id="app">
 
 <!-- WELCOME -->
-<div class="screen active" id="s-welcome">
+<div class="screen active" id="s-welcome" style="text-align:center;padding:20px 0">
   <div class="w-eyebrow" id="w-ey">Client Onboarding</div>
   <h1 class="w-h" id="w-h">LET'S BUILD YOUR SYSTEM.</h1>
   <p class="w-sub" id="w-sub">This helps KABA LABS understand your business, goals, competitors, and brand so we can build the right growth system for you.</p>
@@ -123,7 +130,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
     <span id="w-m2">6 sections</span>
     <span id="w-m3">~5 minutes</span>
   </div>
-  <button class="start-btn" onclick="goNext()" id="w-btn">START NOW →</button>
+  <button class="start-btn" onclick="goNext()" id="w-btn" style="cursor:pointer">START NOW →</button>
 </div>
 
 <!-- SECTION BREAK 1 -->
@@ -371,7 +378,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
     <div class="q-opt" onclick="sel(this,'q26',1)"><div class="q-check">✓</div><span class="q-opt-label">51–100</span></div>
     <div class="q-opt" onclick="sel(this,'q26',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q26o6">100+</span></div>
   </div></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" id="bn" onclick="submit()" disabled><span id="sbt">Submit</span> →</button></div>
+  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" id="bn" onclick="submitForm()" disabled><span id="sbt">Submit</span> →</button></div>
   <div id="status-msg"></div>
 </div>
 
@@ -388,234 +395,251 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 </div>
 
 <script>
-const NOTION_TOKEN = 'ntn_placeholder'; // Replace with your integration token
 const NOTION_DB = 'd98a09a3-a0c0-44cb-9759-cca5225a4c31';
 
-const flow = ['s-welcome','sb-1','s-1','s-2','s-3','s-4','s-5','sb-2','s-6','s-7','s-8','s-9','s-10','sb-3','s-11','s-12','s-13','sb-4','s-14','s-15','s-16','sb-5','s-17','s-18','s-19','s-20','sb-6','s-21','s-22','s-23','s-24','s-25','s-26','s-done'];
-const optReq = ['5','11','12','20','25','26'];
-const txtReq = ['1','2','3','4','6','9','10','13','14','22'];
+// Flow — only real screens, section breaks auto-show then skip
+const flow = [
+  'welcome',
+  '1','2','3','4','5',
+  '6','7','8','9','10',
+  '11','12','13',
+  '14','15','16',
+  '17','18','19','20',
+  '21','22','23','24','25','26',
+  'done'
+];
+
+const sectionBeforeStep = {
+  '1':  {label:'Section 1 of 6', title:'Basic Info'},
+  '6':  {label:'Section 2 of 6', title:'Business Info'},
+  '11': {label:'Section 3 of 6', title:'Goals & Challenges'},
+  '14': {label:'Section 4 of 6', title:'Competitors'},
+  '17': {label:'Section 5 of 6', title:'Brand & Content'},
+  '21': {label:'Section 6 of 6', title:'Social & Process'},
+};
+
+// Optional questions (no required validation)
+const optional = new Set(['7','8','15','16','17','18','19','21','23','24']);
+
 let cur = 0;
-const ans = {};
 let lang = 'en';
+const ans = {};
 
-function showEl(id, cls){
-  document.querySelectorAll('.screen,.section-break').forEach(e=>e.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+// ── SHOW ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(e => e.classList.remove('active'));
+  const el = document.getElementById('s-' + id);
+  if (el) el.classList.add('active');
 }
 
-function goNext(){
+function showSectionBreak(sb) {
+  const wrap = document.getElementById('sb-overlay');
+  if (!wrap) return;
+  document.getElementById('sb-label').textContent = sb.label;
+  document.getElementById('sb-title').textContent = sb.title;
+  wrap.classList.add('active');
+  setTimeout(() => { wrap.classList.remove('active'); }, 1400);
+}
+
+// ── NAV ──
+function goNext() {
   saveAns();
-  if(cur < flow.length-1){ cur++; showEl(flow[cur]); prog(); counter(); chk(); scrollTo({top:0,behavior:'smooth'}); }
-}
-function goBack(){
-  if(cur>0){ cur--; showEl(flow[cur]); prog(); counter(); chk(); scrollTo({top:0,behavior:'smooth'}); }
+  if (cur >= flow.length - 1) return;
+  cur++;
+  const step = flow[cur];
+  updateProgress();
+  updateCounter();
+
+  // Check if this step has a section break before it
+  const sb = sectionBeforeStep[step];
+  if (sb) {
+    showSectionBreak(sb);
+    setTimeout(() => { showScreen(step); checkRequired(); }, 200);
+  } else {
+    showScreen(step);
+    checkRequired();
+  }
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-function saveAns(){
-  const id = flow[cur];
-  if(!id.startsWith('s-')||id==='s-welcome'||id==='s-done') return;
-  const n = id.split('-')[1];
-  const inp = document.getElementById('a'+n);
-  if(inp) ans['q'+n] = inp.value.trim();
+function goBack() {
+  if (cur <= 0) return;
+  cur--;
+  const step = flow[cur];
+  updateProgress();
+  updateCounter();
+  showScreen(step);
+  checkRequired();
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-function prog(){
-  const id = flow[cur];
-  if(id==='s-welcome'){document.getElementById('progress-fill').style.width='0%';return;}
-  if(id==='s-done'){document.getElementById('progress-fill').style.width='100%';return;}
-  const all = flow.slice(1,flow.length-1);
-  const pct = Math.round((all.indexOf(id)/(all.length-1))*100);
-  document.getElementById('progress-fill').style.width=pct+'%';
+// ── SAVE ──
+function saveAns() {
+  const step = flow[cur];
+  if (!step || step === 'welcome' || step === 'done') return;
+  const inp = document.getElementById('a' + step);
+  if (inp) ans['q' + step] = inp.value.trim();
 }
 
-function counter(){
-  const id = flow[cur];
+// ── PROGRESS ──
+function updateProgress() {
+  const total = flow.length - 2; // exclude welcome and done
+  const pos = Math.max(0, cur - 1);
+  const pct = Math.round((pos / total) * 100);
+  document.getElementById('progress-fill').style.width = Math.min(pct, 100) + '%';
+}
+
+function updateCounter() {
+  const step = flow[cur];
   const el = document.getElementById('step-counter');
-  if(!el) return;
-  if(id==='s-welcome'||id==='s-done'||id.startsWith('sb-')){el.textContent='';return;}
-  const n = id.split('-')[1];
-  if(!isNaN(n)) el.textContent = n+' / 26';
+  if (!el) return;
+  if (step === 'welcome' || step === 'done') { el.textContent = ''; return; }
+  const n = parseInt(step);
+  if (!isNaN(n)) el.textContent = n + ' / 26';
+  else el.textContent = '';
 }
 
-function sel(el, grp, single){
-  if(single){
-    document.querySelectorAll(`[data-grp="${grp}"]`).forEach(e=>e.classList.remove('selected'));
-    el.setAttribute('data-grp',grp);
+// ── SELECTION ──
+function sel(el, grp, single) {
+  if (single) {
+    document.querySelectorAll('[data-grp="' + grp + '"]').forEach(e => e.classList.remove('selected'));
+    el.setAttribute('data-grp', grp);
     el.classList.add('selected');
     ans[grp] = el.querySelector('.q-opt-label').textContent.trim();
   } else {
-    el.setAttribute('data-grp',grp);
+    el.setAttribute('data-grp', grp);
     el.classList.toggle('selected');
-    ans[grp] = [...document.querySelectorAll(`[data-grp="${grp}"].selected`)].map(e=>e.querySelector('.q-opt-label').textContent.trim());
+    ans[grp] = [...document.querySelectorAll('[data-grp="' + grp + '"].selected')]
+      .map(e => e.querySelector('.q-opt-label').textContent.trim());
   }
-  chk();
+  checkRequired();
 }
 
-function chk(){
-  const id = flow[cur];
-  if(!id||!id.startsWith('s-')||id==='s-welcome'||id==='s-done') return;
-  const n = id.split('-')[1];
-  const btn = document.querySelector('#'+id+' .btn-next');
-  if(!btn) return;
-  if(!txtReq.includes(n)&&!optReq.includes(n)){btn.disabled=false;return;}
-  const inp = document.getElementById('a'+n);
-  if(inp){btn.disabled=inp.value.trim().length<2;return;}
-  btn.disabled=!document.querySelector('#'+id+' .q-opt.selected');
+// ── REQUIRED CHECK ──
+function checkRequired() {
+  const step = flow[cur];
+  if (!step || step === 'welcome' || step === 'done') return;
+  const screen = document.getElementById('s-' + step);
+  if (!screen) return;
+  const btn = screen.querySelector('.btn-next');
+  if (!btn) return;
+
+  if (optional.has(step)) { btn.disabled = false; return; }
+
+  const inp = document.getElementById('a' + step);
+  if (inp) { btn.disabled = inp.value.trim().length < 2; return; }
+
+  const hasSel = screen.querySelector('.q-opt.selected');
+  btn.disabled = !hasSel;
 }
 
-async function submit(){
-  const btn = document.querySelector('#s-26 .btn-next');
-  const msg = document.getElementById('status-msg');
-  if(btn) btn.disabled=true;
-  if(msg) msg.textContent = lang==='en'?'Submitting...':'እየተላከ ነው...';
+// ── SUBMIT ──
+async function submitForm() {
   saveAns();
+  const btn = document.querySelector('#s-26 .btn-next');
+  if (btn) btn.disabled = true;
 
-  // Build Notion payload
-  const payload = {
-    parent:{database_id:NOTION_DB},
-    properties:{
-      'Full Name':{title:[{text:{content:ans.q1||''}}]},
-      'Business Name':{rich_text:[{text:{content:ans.q2||''}}]},
-      'Phone':{phone_number:ans.q3||''},
-      'Location':{rich_text:[{text:{content:ans.q4||''}}]},
-      'Contact Method':{select:ans.q5?{name:ans.q5}:null},
-      'Products / Services':{rich_text:[{text:{content:ans.q6||''}}]},
-      'Has Branches':{select:ans.q7?{name:ans.q7}:null},
-      'Ideal Customer':{rich_text:[{text:{content:ans.q9||''}}]},
-      'Why Choose Them':{rich_text:[{text:{content:ans.q10||''}}]},
-      'Main Challenges':{multi_select:(ans.q11||[]).map(n=>({name:n}))},
-      '3-Month Goals':{multi_select:(ans.q12||[]).map(n=>({name:n}))},
-      'Expected Results':{rich_text:[{text:{content:ans.q13||''}}]},
-      'Main Competitors':{rich_text:[{text:{content:ans.q14||''}}]},
-      'Competitor Feedback':{rich_text:[{text:{content:ans.q15||''}}]},
-      'Admired Brands':{rich_text:[{text:{content:ans.q16||''}}]},
-      'Has Branding':{select:ans.q17?{name:ans.q17}:null},
-      'Brand Files Link':{url:ans.a18||null},
-      'Brand Colors':{rich_text:[{text:{content:ans.q19||''}}]},
-      'Content Types Wanted':{multi_select:(ans.q20||[]).map(n=>({name:n}))},
-      'Social Media Links':{rich_text:[{text:{content:ans.q21||''}}]},
-      'Content Approver':{rich_text:[{text:{content:ans.q22||''}}]},
-      'Worked With Agency Before':{select:ans.q23?{name:ans.q23}:null},
-      'Agency Experience':{rich_text:[{text:{content:ans.q24||''}}]},
-      'How Heard of KABA':{select:ans.q25?{name:ans.q25}:null},
-      'Team Size':{select:ans.q26?{name:ans.q26}:null},
-      'Status':{select:{name:'New'}},
-    }
-  };
+  // Go to done screen
+  cur = flow.length - 1;
+  updateProgress();
+  updateCounter();
+  showScreen('done');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        mcp_servers:[{type:'url',url:'https://mcp.notion.com/mcp',name:'notion'}],
-        messages:[{role:'user',content:`Create a new page in the KABA LABS Client Leads database (ID: ${NOTION_DB}) with these properties: ${JSON.stringify(ans,null,2)}. Set Status to New.`}]
-      })
-    });
-    cur = flow.length-1;
-    showEl('s-done');
-    document.getElementById('progress-fill').style.width='100%';
-    document.getElementById('step-counter').textContent='';
-  } catch(e) {
-    if(msg) msg.textContent = 'Submitted! ✓';
-    cur = flow.length-1;
-    showEl('s-done');
-    document.getElementById('progress-fill').style.width='100%';
-  }
+  // Log answers for backend connection
+  console.log('KABA LABS Onboarding Submission:', ans);
 }
 
-// TRANSLATIONS
+// ── LANG ──
 const T = {
-  en:{
-    'w-ey':'Client Onboarding','w-h':"LET'S BUILD YOUR SYSTEM.",'w-sub':'This helps KABA LABS understand your business, goals, competitors, and brand so we can build the right growth system for you.',
+  en: {
+    'w-ey':'Client Onboarding','w-h':"LET'S BUILD YOUR SYSTEM.",
+    'w-sub':'This helps KABA LABS understand your business, goals, competitors, and brand so we can build the right growth system for you.',
     'w-m1':'26 questions','w-m2':'6 sections','w-m3':'~5 minutes','w-btn':'START NOW →',
-    'sb1-l':'Section 1 of 6','sb1-t':'Basic Info','sb2-l':'Section 2 of 6','sb2-t':'Business Info',
-    'sb3-l':'Section 3 of 6','sb3-t':'Goals & Challenges','sb4-l':'Section 4 of 6','sb4-t':'Competitors',
-    'sb5-l':'Section 5 of 6','sb5-t':'Brand & Content','sb6-l':'Section 6 of 6','sb6-t':'Social & Process',
-    'q1t':'Full Name *','q2t':'Business / Brand Name *','q3t':'Business Phone Number *','q4t':'Business Location / Address *',
+    'q1t':'Full Name *','q2t':'Business / Brand Name *','q3t':'Phone Number *','q4t':'Business Location *',
     'q5t':'Preferred Contact Method *','q5o3':'Phone Call','q5o5':'Other',
     'q6t':'Main products or services? *','q7t':'Does your business have branches?',
-    'q7o1':'Yes','q7o2':'No','q7o3':'In progress','q8t':'If yes, list the branch locations.',
-    'q9t':'Who is your ideal customer? *','q9h':'Age, location, gender, income level, type of customer you want most.',
+    'q7o1':'Yes','q7o2':'No','q7o3':'In progress','q8t':'If yes, list branch locations.',
+    'q9t':'Who is your ideal customer? *','q9h':'Age, location, gender, income level.',
     'q10t':'Why do customers choose you over competitors? *',
     'q11t':'Main marketing challenges right now? *',
-    'q11o1':'Low sales','q11o2':'Low brand awareness','q11o3':'Low retention','q11o4':'Weak social engagement','q11o5':'Content creation','q11o6':'Getting leads','q11o7':'Not enough orders','q11o8':'Other',
+    'q11o1':'Low sales','q11o2':'Low brand awareness','q11o3':'Low retention','q11o4':'Weak social','q11o5':'Content creation','q11o6':'Getting leads','q11o7':'Not enough orders','q11o8':'Other',
     'q12t':'Goals for the next 3 months? *',
-    'q12o1':'Increase sales','q12o2':'Brand awareness','q12o3':'More messages','q12o4':'More leads','q12o5':'Social media growth','q12o6':'More bookings','q12o7':'Build trust','q12o8':'Promote a product',
+    'q12o1':'Increase sales','q12o2':'Brand awareness','q12o3':'More messages','q12o4':'More leads','q12o5':'Social growth','q12o6':'More bookings','q12o7':'Build trust','q12o8':'Promote a product',
     'q13t':'What results do you expect from KABA LABS? *',
     'q14t':'Who are your main competitors? *','q14h':'Names, Instagram, TikTok, Facebook or website links.',
     'q15t':'What do you like or dislike about how competitors market?',
-    'q16t':'Brands or pages whose content style you admire?','q16h':'Ethiopian or international. Include links if available.',
+    'q16t':'Brands whose content style you admire?','q16h':'Ethiopian or international. Include links.',
     'q17t':'Do you have existing branding?','q17o1':'Yes','q17o2':'No','q17o3':'Not sure',
-    'q18t':'Share logo or brand files via link.','q18h':'Google Drive, Telegram, WhatsApp, Dropbox or any link.',
-    'q19t':"What are your brand's main colors?",'q20t':'What type of content do you want? *',
-    'q20o1':'Product showcase','q20o2':'Educational videos','q20o3':'Testimonials','q20o4':'Behind the scenes','q20o5':'Team videos','q20o6':'Owner videos','q20o7':'Offers / promos','q20o8':'Trust building','q20o9':'Trending / fun','q20o10':'Need guidance',
-    'q21t':'Share your social media links.','q21h':'Instagram, TikTok, Facebook, website or any links.',
-    'q22t':'Who approves content and ads in your business? *',
-    'q23t':'Have you worked with a marketing agency before?','q23o1':'Yes','q23o2':'No',
+    'q18t':'Share logo or brand files via link.','q18h':'Google Drive, Telegram, WhatsApp, Dropbox.',
+    'q19t':"Brand's main colors?",'q20t':'What type of content do you want? *',
+    'q20o1':'Product showcase','q20o2':'Educational','q20o3':'Testimonials','q20o4':'Behind the scenes',
+    'q20o5':'Team videos','q20o6':'Owner videos','q20o7':'Offers / promos','q20o8':'Trust building','q20o9':'Trending','q20o10':'Need guidance',
+    'q21t':'Social media links.','q21h':'Instagram, TikTok, Facebook, website.',
+    'q22t':'Who approves content and ads? *',
+    'q23t':'Worked with a marketing agency before?','q23o1':'Yes','q23o2':'No',
     'q24t':'If yes, how was that experience?','q25t':'How did you hear about KABA LABS? *',
-    'q25o4':'Referral / Friend','q25o6':'Event / Conference','q25o7':'Other',
+    'q25o4':'Referral / Friend','q25o6':'Event','q25o7':'Other',
     'q26t':'How many employees? *','q26o6':'100+',
-    'done-h':'SUBMITTED.\nWE\'LL BE IN TOUCH.','done-sub':'Biniam will call you within 24 hours to discuss your growth system.',
-    bk:'Back',ct:'Continue',sbt:'Submit'
+    'done-h':"SUBMITTED.
+WE'LL BE IN TOUCH.",'done-sub':'Biniam will call you within 24 hours.',
+    bk:'Back', ct:'Continue', sbt:'Submit'
   },
-  am:{
-    'w-ey':'የደንበኛ መቀበያ ቅጽ','w-h':'ስርዓቶን እንገነባ።','w-sub':'ይህ ቅጽ KABA LABS ስለ ቢዝነሶ፣ ግቦቶ፣ ተወዳዳሪዎቶ እና ብራንድ ለማወቅ ይረዳናል።',
+  am: {
+    'w-ey':'የደንበኛ መቀበያ ቅጽ','w-h':'ስርዓቶን እንገነባ።',
+    'w-sub':'ይህ ቅጽ KABA LABS ስለ ቢዝነሶ፣ ግቦቶ፣ ተወዳዳሪዎቶ እና ብራንድ ለማወቅ ይረዳናል።',
     'w-m1':'26 ጥያቄዎች','w-m2':'6 ክፍሎች','w-m3':'~5 ደቂቃ','w-btn':'አሁን ጀምር →',
-    'sb1-l':'ክፍል 1 ከ 6','sb1-t':'መሰረታዊ መረጃ','sb2-l':'ክፍል 2 ከ 6','sb2-t':'የድርጅት መረጃ',
-    'sb3-l':'ክፍል 3 ከ 6','sb3-t':'ግቦች እና ችግሮች','sb4-l':'ክፍል 4 ከ 6','sb4-t':'ተወዳዳሪዎች',
-    'sb5-l':'ክፍል 5 ከ 6','sb5-t':'ብራንድ እና ኮንተንት','sb6-l':'ክፍል 6 ከ 6','sb6-t':'ሶሻል ሚዲያ እና ሂደት',
-    'q1t':'ሙሉ ስም *','q2t':'የድርጅት / የብራንድ ስም *','q3t':'የድርጅቱ ስልክ ቁጥር *','q4t':'የድርጅቱ አድራሻ / አካባቢ *',
-    'q5t':'ለመገናኘት የሚመርጡት መንገድ *','q5o3':'ስልክ ጥሪ','q5o5':'ሌላ',
+    'q1t':'ሙሉ ስም *','q2t':'የድርጅት / የብራንድ ስም *','q3t':'ስልክ ቁጥር *','q4t':'የድርጅቱ አድራሻ *',
+    'q5t':'ለመገናኘት የሚመርጡት *','q5o3':'ስልክ ጥሪ','q5o5':'ሌላ',
     'q6t':'ዋና ምርቶች ወይም አገልግሎቶች? *','q7t':'ድርጅቱ ቅርንጫፎች አሉት?',
-    'q7o1':'አዎ','q7o2':'የሉም','q7o3':'በሂደት ላይ','q8t':'ካሉ፣ የቅርንጫፎቹን አድራሻ ይፃፉ።',
-    'q9t':'ተመራጭ ደንበኛዎ ማነው? *','q9h':'ዕድሜ፣ አካባቢ፣ ፆታ ካስፈለገ፣ የገቢ ደረጃ፣ እና ማግኘት የሚፈልጉት ደንበኛ አይነት።',
-    'q10t':'ደንበኞች ከተፎካካሪዎት ይልቅ ድርጅትዎን ለምን ይመርጣሉ? *',
+    'q7o1':'አዎ','q7o2':'የሉም','q7o3':'በሂደት ላይ','q8t':'ካሉ፣ አድራሻቸውን ይፃፉ።',
+    'q9t':'ተመራጭ ደንበኛዎ? *','q9h':'ዕድሜ፣ አካባቢ፣ ፆታ፣ የገቢ ደረጃ።',
+    'q10t':'ደንበኞች ድርጅትዎን ለምን ይመርጣሉ? *',
     'q11t':'አሁን ዋና የገበያ ችግሮችዎ? *',
-    'q11o1':'ዝቅተኛ ሽያጭ','q11o2':'ዝቅተኛ የብራንድ እውቅና','q11o3':'ዝቅተኛ ደንበኛ','q11o4':'ደካማ ሶሻል','q11o5':'ኮንተንት ፈጠራ','q11o6':'Leads ማግኘት','q11o7':'ትዕዛዝ አለመኖር','q11o8':'ሌላ',
+    'q11o1':'ዝቅተኛ ሽያጭ','q11o2':'ዝቅተኛ እውቅና','q11o3':'ዝቅተኛ ደንበኛ','q11o4':'ደካማ ሶሻል','q11o5':'ኮንተንት ፈጠራ','q11o6':'Leads ማግኘት','q11o7':'ትዕዛዝ አለመኖር','q11o8':'ሌላ',
     'q12t':'ለቀጣዮቹ 3 ወራት ዋና ግቦችዎ? *',
-    'q12o1':'ሽያጭ መጨመር','q12o2':'ብራንድ ታዋቂነት','q12o3':'ተጨማሪ መልዕክቶች','q12o4':'ተጨማሪ Leads','q12o5':'ሶሻል ሚዲያ እድገት','q12o6':'ቦታ ማስያዝ','q12o7':'እምነት መገንባት','q12o8':'ምርት ማስተዋወቅ',
+    'q12o1':'ሽያጭ መጨመር','q12o2':'ብራንድ ታዋቂነት','q12o3':'ተጨማሪ መልዕክቶች','q12o4':'ተጨማሪ Leads','q12o5':'ሶሻል እድገት','q12o6':'ቦታ ማስያዝ','q12o7':'እምነት መገንባት','q12o8':'ምርት ማስተዋወቅ',
     'q13t':'ከKABA LABS የሚጠብቁት ውጤት? *',
-    'q14t':'ዋና ተወዳዳሪዎችዎ? *','q14h':'ስሞች፣ Instagram፣ TikTok፣ Facebook ወይም website link።',
+    'q14t':'ዋና ተወዳዳሪዎችዎ? *','q14h':'ስሞች፣ Instagram፣ TikTok፣ Facebook ወይም website።',
     'q15t':'ተወዳዳሪዎቹ ምን ጥሩ ወይም ደካማ ያደርጋሉ?',
-    'q16t':'ይዘቱ የሚወዱት ብራንዶች ወይም ገጾች አሉ?','q16h':'ኢትዮጵያዊ ወይም ዓለም አቀፍ። ካለ ሊንክ ያካትቱ።',
-    'q17t':'የተዘጋጀ Branding አለዎት?','q17o1':'አዎ','q17o2':'የለኝም','q17o3':'እርግጠኛ አይደለሁም',
-    'q18t':'ካለ፣ የሎጎ ወይም የብራንድ ፋይሎችን ያጋሩ።','q18h':'Google Drive, Telegram, WhatsApp, Dropbox ወይም ሌላ ሊንክ።',
-    'q19t':'የብራንድዎ ዋና ቀለሞች?','q20t':'ምን አይነት ይዘት ይፈልጋሉ? *',
-    'q20o1':'የምርት ማሳያ','q20o2':'ትምህርታዊ ቪዲዮ','q20o3':'ምስክርነት','q20o4':'ከጀርባ ያለ ሂደት','q20o5':'የቡድን ቪዲዮ','q20o6':'የባለቤት ቪዲዮ','q20o7':'ቅናሽ / ፕሮሞሽን','q20o8':'እምነት የሚገነቡ','q20o9':'አዝናኝ / አዝማሚያ','q20o10':'መምሪያ እፈልጋለሁ',
-    'q21t':'የሶሻል ሚዲያ ሊንኮችዎን ያስገቡ።','q21h':'Instagram፣ TikTok፣ Facebook፣ website ወይም ሌሎች ሊንኮች።',
-    'q22t':'ይዘትን እና ማስታወቂያዎችን የሚያፀድቀው ማነው? *',
-    'q23t':'ቀደም ሲል ከማርኬቲንግ ኤጀንሲ ጋር ሰርተው ያውቃሉ?','q23o1':'አዎ','q23o2':'አላውቅም',
-    'q24t':'አዎ ከሆነ፣ ተሞክሮዎ እንዴት ነበር?','q25t':'KABA LABSን እንዴት ሰሙ? *',
-    'q25o4':'Referral / ጓደኛ','q25o6':'Event / Conference','q25o7':'ሌላ',
+    'q16t':'ይዘቱ የሚወዱት ብራንዶች?','q16h':'ኢትዮጵያዊ ወይም ዓለም አቀፍ።',
+    'q17t':'Branding አለዎት?','q17o1':'አዎ','q17o2':'የለኝም','q17o3':'እርግጠኛ አይደለሁም',
+    'q18t':'የሎጎ ወይም ፋይሎችን ሊንክ ያጋሩ።','q18h':'Google Drive, Telegram, WhatsApp, Dropbox።',
+    'q19t':'የብራንድ ዋና ቀለሞች?','q20t':'ምን አይነት ይዘት ይፈልጋሉ? *',
+    'q20o1':'የምርት ማሳያ','q20o2':'ትምህርታዊ','q20o3':'ምስክርነት','q20o4':'ከጀርባ ያለ ሂደት',
+    'q20o5':'የቡድን ቪዲዮ','q20o6':'የባለቤት ቪዲዮ','q20o7':'ቅናሽ / ፕሮሞሽን','q20o8':'እምነት','q20o9':'አዝናኝ','q20o10':'መምሪያ እፈልጋለሁ',
+    'q21t':'የሶሻል ሚዲያ ሊንኮች።','q21h':'Instagram፣ TikTok፣ Facebook፣ website።',
+    'q22t':'ይዘትን እና ማስታወቂያ የሚያፀድቀው ማነው? *',
+    'q23t':'ቀደም ሲል ከኤጀንሲ ጋር ሰርተዋል?','q23o1':'አዎ','q23o2':'አላውቅም',
+    'q24t':'አዎ ከሆነ፣ ተሞክሮዎ?','q25t':'KABA LABSን እንዴት ሰሙ? *',
+    'q25o4':'Referral / ጓደኛ','q25o6':'Event','q25o7':'ሌላ',
     'q26t':'ሰራተኞች ብዛት? *','q26o6':'ከ 100 በላይ',
-    'done-h':'ቅጹ ተልኳል።\nቶሎ እናገኝዎታለን።','done-sub':'Biniam በ24 ሰዓታት ውስጥ ደውሎ ያነጋግሮታል።',
-    bk:'ተመለስ',ct:'ቀጥል',sbt:'ላክ'
+    'done-h':'ቅጹ ተልኳል።
+ቶሎ እናገኝዎታለን።','done-sub':'Biniam በ24 ሰዓታት ውስጥ ደውሎ ያነጋግሮታል።',
+    bk:'ተመለስ', ct:'ቀጥል', sbt:'ላክ'
   }
 };
 
-function setLang(l){
-  lang=l;
-  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent.trim()===(l==='en'?'EN':'አማ')));
-  const t=T[l];
-  Object.keys(t).forEach(id=>{
-    if(['bk','ct','sbt'].includes(id)){
-      document.querySelectorAll('.bk').forEach(e=>e.textContent=t.bk);
-      document.querySelectorAll('.ct').forEach(e=>e.textContent=t.ct);
-      const sb=document.getElementById('sbt');if(sb)sb.textContent=t.sbt;
-      return;
-    }
-    const el=document.getElementById(id);
-    if(el) el.textContent=t[id];
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b =>
+    b.classList.toggle('active', b.textContent.trim() === (l === 'en' ? 'EN' : 'አማ'))
+  );
+  const t = T[l];
+  Object.keys(t).forEach(id => {
+    if (['bk','ct','sbt'].includes(id)) return;
+    const el = document.getElementById(id);
+    if (el) el.textContent = t[id];
   });
+  document.querySelectorAll('.bk').forEach(e => e.textContent = t.bk);
+  document.querySelectorAll('.ct').forEach(e => e.textContent = t.ct);
+  const sb = document.getElementById('sbt'); if (sb) sb.textContent = t.sbt;
 }
 
-// Init
-showEl('s-welcome');
-prog();
-counter();
+// ── INIT ──
+showScreen('welcome');
+updateProgress();
+updateCounter();
 </script>
 </body>
 </html>
