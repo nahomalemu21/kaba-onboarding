@@ -4,646 +4,778 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KABA LABS — Client Onboarding</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--gold:#c8950a;--gold-light:#e5b957;--gold-dim:#b8860b;--text:#1a1612;--muted:#7a7060;--border:rgba(180,120,10,.15);--bg:#f8f6f1;--card:#ffffff;--ease:cubic-bezier(.16,1,.3,1)}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f8f6f1;color:#1a1612;font-family:'Syne',sans-serif;min-height:100vh}
 
-/* PROGRESS */
-#progress-wrap{position:fixed;top:0;left:0;right:0;z-index:200;height:3px;background:rgba(180,120,10,.1)}
-#progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));width:0%;transition:width .6s var(--ease)}
+/* progress bar */
+#bar{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(180,120,10,.12);z-index:99}
+#bar-fill{height:100%;width:0;background:linear-gradient(90deg,#c8950a,#e5b957);transition:width .5s ease}
 
-/* LOGO */
-#logo{position:fixed;top:20px;left:24px;z-index:100;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.12em;color:var(--gold-dim)}
+/* logo */
+#logo{position:fixed;top:18px;left:20px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.12em;color:#b8860b;z-index:99}
 
-/* LANG */
-#lang-bar{position:fixed;top:16px;right:20px;z-index:100;display:flex;gap:3px;background:#fff;border:1px solid var(--border);border-radius:999px;padding:3px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.lang-btn{border:none;background:none;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;padding:5px 12px;border-radius:999px;cursor:pointer;transition:all .2s}
-.lang-btn.active{background:var(--gold);color:#fff;font-weight:700}
+/* lang */
+#lang{position:fixed;top:14px;right:16px;display:flex;gap:3px;background:#fff;border:1px solid rgba(180,120,10,.2);border-radius:999px;padding:3px;z-index:99}
+.lb{border:none;background:none;color:#7a7060;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;padding:5px 11px;border-radius:999px;cursor:pointer}
+.lb.on{background:#c8950a;color:#fff;font-weight:700}
 
-/* STEP COUNTER */
-#step-counter{position:fixed;top:26px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--muted);z-index:100}
+/* counter */
+#counter{position:fixed;top:24px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;color:#a09080;z-index:99}
 
-/* APP */
-#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 16px 40px}
+/* main layout */
+#app{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 16px 40px}
 
-/* SCREEN */
-.screen{display:none;width:100%;max-width:600px;animation:fadeUp .45s var(--ease)}
-.screen.active{display:flex;flex-direction:column;align-items:center}
-.section-break{display:none;width:100%;max-width:600px;animation:fadeUp .45s var(--ease)}
-.section-break.active{display:block}
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+/* all pages hidden by default */
+.page{display:none;width:100%;max-width:580px;flex-direction:column;align-items:center}
+.page.show{display:flex;animation:up .4s ease}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
-/* WELCOME */
-#s-welcome{text-align:center;padding:20px 0}
-.w-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:20px;display:flex;align-items:center;gap:12px;justify-content:center}
-.w-eyebrow::before,.w-eyebrow::after{content:'';width:32px;height:1px;background:var(--border)}
-.w-h{font-family:'Bebas Neue',sans-serif;font-size:clamp(54px,14vw,88px);line-height:.9;margin-bottom:18px;background:linear-gradient(135deg,#7a5500 0%,var(--gold) 50%,#e5b957 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
-.w-sub{font-size:14px;color:var(--muted);line-height:1.8;max-width:400px;margin:0 auto 28px}
-.w-meta{display:flex;gap:20px;justify-content:center;margin-bottom:36px;flex-wrap:wrap}
-.w-meta span{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.14em;color:var(--gold-dim);display:flex;align-items:center;gap:6px}
-.w-meta span::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--gold)}
-.start-btn{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;color:#fff;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;padding:15px 52px;cursor:pointer;border-radius:6px;box-shadow:0 6px 24px rgba(200,149,10,.25);transition:transform .2s,box-shadow .2s}
-.start-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(200,149,10,.35)}
+/* welcome */
+#p-welcome{text-align:center}
+.ey{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#b8860b;margin-bottom:18px;display:flex;align-items:center;gap:10px;justify-content:center}
+.ey::before,.ey::after{content:'';width:28px;height:1px;background:rgba(180,120,10,.25)}
+.wh{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,14vw,86px);line-height:.9;margin-bottom:16px;background:linear-gradient(135deg,#8a6200,#c8950a,#e5b957);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ws{font-size:14px;color:#7a7060;line-height:1.8;max-width:380px;margin:0 auto 24px}
+.wm{display:flex;gap:18px;justify-content:center;margin-bottom:32px;flex-wrap:wrap}
+.wm span{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.14em;color:#b8860b;display:flex;align-items:center;gap:5px}
+.wm span::before{content:'';width:4px;height:4px;border-radius:50%;background:#c8950a}
+.sbtn{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;color:#fff;background:linear-gradient(135deg,#c8950a,#e5b957);border:none;padding:14px 52px;border-radius:6px;cursor:pointer;box-shadow:0 6px 24px rgba(200,149,10,.25);transition:transform .2s}
+.sbtn:hover{transform:translateY(-2px)}
 
-/* SECTION BREAK */
-.sb-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.sb-label::after{content:'';flex:1;height:1px;background:var(--border)}
-.sb-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,8vw,52px);color:var(--text);line-height:.95;margin-bottom:6px}
+/* section header page */
+#p-section{text-align:center;padding:20px 0}
+.sh-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#b8860b;margin-bottom:12px;display:flex;align-items:center;gap:10px;justify-content:center}
+.sh-label::before,.sh-label::after{content:'';flex:1;height:1px;background:rgba(180,120,10,.2);max-width:60px}
+.sh-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,12vw,80px);color:#1a1612;line-height:.9;margin-bottom:20px}
+.sh-next{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;background:linear-gradient(135deg,#c8950a,#e5b957);border:none;padding:12px 40px;border-radius:6px;cursor:pointer;transition:transform .2s}
+.sh-next:hover{transform:translateY(-2px)}
 
-/* QUESTION CARD */
-.q-card{width:100%;background:var(--card);border:1px solid rgba(180,120,10,.1);border-radius:18px;padding:28px;margin-bottom:14px;box-shadow:0 2px 20px rgba(0,0,0,.05)}
-.q-num{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.16em;color:var(--gold-dim);margin-bottom:10px;display:block}
-.q-text{font-size:clamp(15px,3.5vw,17px);font-weight:700;color:var(--text);line-height:1.45;margin-bottom:6px}
-.q-hint{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:18px}
-.req{color:var(--gold)}
+/* question card */
+.card{width:100%;background:#fff;border:1px solid rgba(180,120,10,.1);border-radius:18px;padding:28px;margin-bottom:14px;box-shadow:0 2px 16px rgba(0,0,0,.05)}
+.qnum{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.16em;color:#b8860b;margin-bottom:10px;display:block}
+.qtxt{font-size:clamp(15px,3.5vw,17px);font-weight:700;color:#1a1612;line-height:1.45;margin-bottom:6px}
+.qhint{font-size:12px;color:#7a7060;line-height:1.6;margin-bottom:16px}
+.req{color:#c8950a}
 
-/* INPUT */
-.q-input{width:100%;background:#fafaf8;border:1.5px solid rgba(180,120,10,.12);border-radius:10px;padding:13px 15px;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;outline:none;transition:border-color .2s,background .2s;resize:vertical;min-height:50px}
-.q-input:focus{border-color:rgba(200,149,10,.4);background:#fff9ee}
-.q-input::placeholder{color:rgba(120,110,80,.4)}
+/* text input */
+.inp{width:100%;background:#fafaf8;border:1.5px solid rgba(180,120,10,.12);border-radius:10px;padding:13px 15px;color:#1a1612;font-family:'Syne',sans-serif;font-size:14px;outline:none;transition:border-color .2s;resize:vertical;min-height:50px}
+.inp:focus{border-color:rgba(200,149,10,.4);background:#fffdf8}
+.inp::placeholder{color:rgba(120,110,80,.4)}
 
-/* OPTIONS */
-.q-opts{display:flex;flex-direction:column;gap:7px}
-.q-opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.q-opt{display:flex;align-items:center;gap:11px;padding:11px 15px;background:#fafaf8;border:1.5px solid rgba(180,120,10,.1);border-radius:10px;cursor:pointer;transition:all .2s;user-select:none}
-.q-opt:hover{border-color:rgba(200,149,10,.25);background:#fffdf5}
-.q-opt.selected{border-color:var(--gold);background:#fff8e0}
-.q-check{width:17px;height:17px;border-radius:50%;border:1.5px solid rgba(180,120,10,.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:9px;color:transparent}
-.q-check.sq{border-radius:4px}
-.q-opt.selected .q-check{background:var(--gold);border-color:var(--gold);color:#fff}
-.q-opt-label{font-size:13px;color:var(--muted);font-weight:600;transition:color .2s}
-.q-opt.selected .q-opt-label{color:var(--text)}
+/* options */
+.opts{display:flex;flex-direction:column;gap:7px}
+.opts2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.opt{display:flex;align-items:center;gap:11px;padding:11px 15px;background:#fafaf8;border:1.5px solid rgba(180,120,10,.1);border-radius:10px;cursor:pointer;user-select:none;transition:all .2s}
+.opt:hover{border-color:rgba(200,149,10,.3);background:#fffdf5}
+.opt.sel{border-color:#c8950a;background:#fff8df}
+.dot{width:17px;height:17px;border-radius:50%;border:1.5px solid rgba(180,120,10,.25);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;transition:all .2s}
+.sq{border-radius:4px}
+.opt.sel .dot{background:#c8950a;border-color:#c8950a;color:#fff}
+.olabel{font-size:13px;color:#7a7060;font-weight:600;transition:color .2s}
+.opt.sel .olabel{color:#1a1612}
 
-/* NAV */
-.nav-row{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:6px;gap:10px}
-.btn-back{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--muted);background:none;border:1.5px solid rgba(180,120,10,.12);padding:11px 20px;border-radius:8px;cursor:pointer;transition:all .2s}
-.btn-back:hover{border-color:rgba(180,120,10,.3);color:var(--text)}
-.btn-next{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.08em;color:#fff;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;padding:11px 32px;border-radius:8px;cursor:pointer;flex:1;max-width:220px;transition:transform .2s,box-shadow .2s,opacity .2s}
-.btn-next:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,149,10,.25)}
-.btn-next:disabled{opacity:.3;cursor:not-allowed;transform:none}
+/* nav buttons */
+.nav{display:flex;justify-content:space-between;align-items:center;width:100%;gap:10px;margin-top:4px}
+.bbk{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:#7a7060;background:none;border:1.5px solid rgba(180,120,10,.15);padding:11px 20px;border-radius:8px;cursor:pointer;transition:all .2s}
+.bbk:hover{border-color:rgba(180,120,10,.3);color:#1a1612}
+.bnx{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.08em;color:#fff;background:linear-gradient(135deg,#c8950a,#e5b957);border:none;padding:11px 32px;border-radius:8px;cursor:pointer;flex:1;max-width:220px;transition:transform .2s,opacity .2s}
+.bnx:hover:not(:disabled){transform:translateY(-1px)}
+.bnx:disabled{opacity:.3;cursor:not-allowed}
 
-/* STATUS */
-#status-msg{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--muted);text-align:center;margin-top:8px;min-height:16px}
+/* done */
+#p-done{text-align:center}
+.dico{font-size:52px;margin-bottom:16px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.dh{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,10vw,72px);line-height:.92;margin-bottom:14px;background:linear-gradient(135deg,#8a6200,#c8950a,#e5b957);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ds{font-size:14px;color:#7a7060;line-height:1.8;max-width:360px;margin:0 auto 24px}
+.dcard{background:#fff;border:1.5px solid rgba(180,120,10,.12);border-radius:14px;padding:20px 24px;max-width:360px;width:100%;text-align:left}
+.dcard p{font-family:'Space Mono',monospace;font-size:11px;color:#7a7060;line-height:2.2}
+.dcard strong{color:#b8860b}
 
-/* DONE */
-#s-done{text-align:center;padding:20px 0}
-.done-icon{font-size:52px;margin-bottom:18px;animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.done-h{font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,10vw,76px);line-height:.92;margin-bottom:14px;background:linear-gradient(135deg,#7a5500,var(--gold),#e5b957);-webkit-background-clip:text;background-clip:text;color:transparent}
-.done-sub{font-size:14px;color:var(--muted);line-height:1.8;max-width:380px;margin:0 auto 28px}
-.done-card{background:var(--card);border:1.5px solid rgba(180,120,10,.12);border-radius:14px;padding:20px 24px;max-width:380px;width:100%;margin:0 auto;text-align:left}
-.done-card p{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--muted);line-height:2.2}
-.done-card strong{color:var(--gold-dim)}
-
-@media(max-width:540px){.q-opts-grid{grid-template-columns:1fr}#logo{font-size:16px}}
+@media(max-width:500px){.opts2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<!-- SECTION BREAK OVERLAY -->
-<div id="sb-overlay" style="position:fixed;inset:0;z-index:500;background:#f8f6f1;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s">
-  <div id="sb-label" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#b8860b;margin-bottom:12px;display:flex;align-items:center;gap:12px">Section</div>
-  <div id="sb-title" style="font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,12vw,80px);color:#1a1612;line-height:.9">Basic Info</div>
-</div>
-
-
-<div id="progress-wrap"><div id="progress-fill"></div></div>
+<div id="bar"><div id="bar-fill"></div></div>
 <div id="logo">KABA LABS</div>
-<div id="lang-bar">
-  <button class="lang-btn active" onclick="setLang('en')">EN</button>
-  <button class="lang-btn" onclick="setLang('am')">አማ</button>
+<div id="lang">
+  <button class="lb on" onclick="setLang('en')">EN</button>
+  <button class="lb" onclick="setLang('am')">አማ</button>
 </div>
-<div id="step-counter"></div>
+<div id="counter"></div>
 
 <div id="app">
 
-<!-- WELCOME -->
-<div class="screen active" id="s-welcome" style="text-align:center;padding:20px 0">
-  <div class="w-eyebrow" id="w-ey">Client Onboarding</div>
-  <h1 class="w-h" id="w-h">LET'S BUILD YOUR SYSTEM.</h1>
-  <p class="w-sub" id="w-sub">This helps KABA LABS understand your business, goals, competitors, and brand so we can build the right growth system for you.</p>
-  <div class="w-meta">
-    <span id="w-m1">26 questions</span>
-    <span id="w-m2">6 sections</span>
-    <span id="w-m3">~5 minutes</span>
+  <!-- WELCOME -->
+  <div class="page show" id="p-welcome">
+    <div class="ey" id="t-ey">Client Onboarding</div>
+    <div class="wh" id="t-wh">LET'S BUILD YOUR SYSTEM.</div>
+    <p class="ws" id="t-ws">This helps KABA LABS understand your business, goals, competitors, and brand so we can build the right growth system for you.</p>
+    <div class="wm">
+      <span id="t-m1">26 questions</span>
+      <span id="t-m2">6 sections</span>
+      <span id="t-m3">~5 minutes</span>
+    </div>
+    <button class="sbtn" id="t-sbtn" onclick="startQuiz()">START NOW →</button>
   </div>
-  <button class="start-btn" onclick="goNext()" id="w-btn" style="cursor:pointer">START NOW →</button>
-</div>
 
-<!-- SECTION BREAK 1 -->
-<div class="section-break" id="sb-1">
-  <div class="sb-label" id="sb1-l">Section 1 of 6</div>
-  <div class="sb-title" id="sb1-t">Basic Info</div>
-</div>
-
-<!-- Q1 -->
-<div class="screen" id="s-1">
-  <div class="q-card"><span class="q-num">01 / 26</span><div class="q-text" id="q1t">Full Name<span class="req">*</span></div><input class="q-input" id="a1" type="text" oninput="chk()"></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-  <div id="status-msg"></div>
-</div>
-
-<!-- Q2 -->
-<div class="screen" id="s-2">
-  <div class="q-card"><span class="q-num">02 / 26</span><div class="q-text" id="q2t">Business / Brand Name<span class="req">*</span></div><input class="q-input" id="a2" type="text" oninput="chk()"></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q3 -->
-<div class="screen" id="s-3">
-  <div class="q-card"><span class="q-num">03 / 26</span><div class="q-text" id="q3t">Business Phone Number<span class="req">*</span></div><input class="q-input" id="a3" type="tel" placeholder="+251..." oninput="chk()"></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q4 -->
-<div class="screen" id="s-4">
-  <div class="q-card"><span class="q-num">04 / 26</span><div class="q-text" id="q4t">Business Location / Address<span class="req">*</span></div><input class="q-input" id="a4" type="text" oninput="chk()"></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q5 -->
-<div class="screen" id="s-5">
-  <div class="q-card"><span class="q-num">05 / 26</span><div class="q-text" id="q5t">Preferred Contact Method<span class="req">*</span></div>
-  <div class="q-opts">
-    <div class="q-opt" onclick="sel(this,'q5',1)"><div class="q-check">✓</div><span class="q-opt-label">WhatsApp</span></div>
-    <div class="q-opt" onclick="sel(this,'q5',1)"><div class="q-check">✓</div><span class="q-opt-label">Telegram</span></div>
-    <div class="q-opt" onclick="sel(this,'q5',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q5o3">Phone Call</span></div>
-    <div class="q-opt" onclick="sel(this,'q5',1)"><div class="q-check">✓</div><span class="q-opt-label">Email</span></div>
-    <div class="q-opt" onclick="sel(this,'q5',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q5o5">Other</span></div>
-  </div></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- SECTION 2 -->
-<div class="section-break" id="sb-2"><div class="sb-label" id="sb2-l">Section 2 of 6</div><div class="sb-title" id="sb2-t">Business Info</div></div>
-
-<!-- Q6 -->
-<div class="screen" id="s-6">
-  <div class="q-card"><span class="q-num">06 / 26</span><div class="q-text" id="q6t">Main products or services?<span class="req">*</span></div><textarea class="q-input" id="a6" rows="3" oninput="chk()"></textarea></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q7 -->
-<div class="screen" id="s-7">
-  <div class="q-card"><span class="q-num">07 / 26</span><div class="q-text" id="q7t">Does your business have branches?</div>
-  <div class="q-opts">
-    <div class="q-opt" onclick="sel(this,'q7',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q7o1">Yes</span></div>
-    <div class="q-opt" onclick="sel(this,'q7',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q7o2">No</span></div>
-    <div class="q-opt" onclick="sel(this,'q7',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q7o3">In progress</span></div>
-  </div></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()"><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q8 -->
-<div class="screen" id="s-8">
-  <div class="q-card"><span class="q-num">08 / 26</span><div class="q-text" id="q8t">If yes, list the branch locations.</div><textarea class="q-input" id="a8" rows="2" oninput="chk()"></textarea></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()"><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q9 -->
-<div class="screen" id="s-9">
-  <div class="q-card"><span class="q-num">09 / 26</span><div class="q-text" id="q9t">Who is your ideal customer?<span class="req">*</span></div><div class="q-hint" id="q9h">Age, location, gender, income level, type of customer you want most.</div><textarea class="q-input" id="a9" rows="3" oninput="chk()"></textarea></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q10 -->
-<div class="screen" id="s-10">
-  <div class="q-card"><span class="q-num">10 / 26</span><div class="q-text" id="q10t">Why do customers choose you over competitors?<span class="req">*</span></div><textarea class="q-input" id="a10" rows="3" oninput="chk()"></textarea></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- SECTION 3 -->
-<div class="section-break" id="sb-3"><div class="sb-label" id="sb3-l">Section 3 of 6</div><div class="sb-title" id="sb3-t">Goals & Challenges</div></div>
-
-<!-- Q11 -->
-<div class="screen" id="s-11">
-  <div class="q-card"><span class="q-num">11 / 26</span><div class="q-text" id="q11t">Main marketing challenges right now?<span class="req">*</span></div>
-  <div class="q-opts-grid">
-    <div class="q-opt" onclick="sel(this,'q11',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q11o1">Low sales</span></div>
-    <div class="q-opt" onclick="sel(this,'q11',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q11o2">Low brand awareness</span></div>
-    <div class="q-opt" onclick="sel(this,'q11',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q11o3">Low customer retention</span></div>
-    <div class="q-opt" onclick="sel(this,'q11',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q11o4">Weak social engagement</span></div>
-    <div class="q-opt" onclick="sel(this,'q11',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q11o5">Content creation</span></div>
-    <div class="q-opt" onclick="sel(this,'q11',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q11o6">Getting leads</span></div>
-    <div class="q-opt" onclick="sel(this,'q11',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q11o7">Not enough orders</span></div>
-    <div class="q-opt" onclick="sel(this,'q11',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q11o8">Other</span></div>
-  </div></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q12 -->
-<div class="screen" id="s-12">
-  <div class="q-card"><span class="q-num">12 / 26</span><div class="q-text" id="q12t">Goals for the next 3 months?<span class="req">*</span></div>
-  <div class="q-opts-grid">
-    <div class="q-opt" onclick="sel(this,'q12',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q12o1">Increase sales</span></div>
-    <div class="q-opt" onclick="sel(this,'q12',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q12o2">Brand awareness</span></div>
-    <div class="q-opt" onclick="sel(this,'q12',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q12o3">More messages</span></div>
-    <div class="q-opt" onclick="sel(this,'q12',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q12o4">More leads</span></div>
-    <div class="q-opt" onclick="sel(this,'q12',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q12o5">Social media growth</span></div>
-    <div class="q-opt" onclick="sel(this,'q12',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q12o6">More bookings</span></div>
-    <div class="q-opt" onclick="sel(this,'q12',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q12o7">Build trust</span></div>
-    <div class="q-opt" onclick="sel(this,'q12',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q12o8">Promote a product</span></div>
-  </div></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q13 -->
-<div class="screen" id="s-13">
-  <div class="q-card"><span class="q-num">13 / 26</span><div class="q-text" id="q13t">What results do you expect from KABA LABS?<span class="req">*</span></div><textarea class="q-input" id="a13" rows="3" oninput="chk()"></textarea></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- SECTION 4 -->
-<div class="section-break" id="sb-4"><div class="sb-label" id="sb4-l">Section 4 of 6</div><div class="sb-title" id="sb4-t">Competitors</div></div>
-
-<!-- Q14 -->
-<div class="screen" id="s-14">
-  <div class="q-card"><span class="q-num">14 / 26</span><div class="q-text" id="q14t">Who are your main competitors?<span class="req">*</span></div><div class="q-hint" id="q14h">Names, Instagram, TikTok, Facebook or website links.</div><textarea class="q-input" id="a14" rows="3" oninput="chk()"></textarea></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q15 -->
-<div class="screen" id="s-15">
-  <div class="q-card"><span class="q-num">15 / 26</span><div class="q-text" id="q15t">What do you like or dislike about how competitors market?</div><textarea class="q-input" id="a15" rows="3" oninput="chk()"></textarea></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()"><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q16 -->
-<div class="screen" id="s-16">
-  <div class="q-card"><span class="q-num">16 / 26</span><div class="q-text" id="q16t">Brands or pages whose content style you admire?</div><div class="q-hint" id="q16h">Ethiopian or international. Include links if available.</div><textarea class="q-input" id="a16" rows="2" oninput="chk()"></textarea></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()"><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- SECTION 5 -->
-<div class="section-break" id="sb-5"><div class="sb-label" id="sb5-l">Section 5 of 6</div><div class="sb-title" id="sb5-t">Brand & Content</div></div>
-
-<!-- Q17 -->
-<div class="screen" id="s-17">
-  <div class="q-card"><span class="q-num">17 / 26</span><div class="q-text" id="q17t">Do you have existing branding?</div>
-  <div class="q-opts">
-    <div class="q-opt" onclick="sel(this,'q17',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q17o1">Yes</span></div>
-    <div class="q-opt" onclick="sel(this,'q17',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q17o2">No</span></div>
-    <div class="q-opt" onclick="sel(this,'q17',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q17o3">Not sure</span></div>
-  </div></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()"><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q18 -->
-<div class="screen" id="s-18">
-  <div class="q-card"><span class="q-num">18 / 26</span><div class="q-text" id="q18t">Share logo or brand files via link.</div><div class="q-hint" id="q18h">Google Drive, Telegram, WhatsApp, Dropbox or any link.</div><input class="q-input" id="a18" type="url" placeholder="https://" oninput="chk()"></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()"><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q19 -->
-<div class="screen" id="s-19">
-  <div class="q-card"><span class="q-num">19 / 26</span><div class="q-text" id="q19t">What are your brand's main colors?</div><input class="q-input" id="a19" type="text" oninput="chk()"></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()"><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q20 -->
-<div class="screen" id="s-20">
-  <div class="q-card"><span class="q-num">20 / 26</span><div class="q-text" id="q20t">What type of content do you want?<span class="req">*</span></div>
-  <div class="q-opts-grid">
-    <div class="q-opt" onclick="sel(this,'q20',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q20o1">Product showcase</span></div>
-    <div class="q-opt" onclick="sel(this,'q20',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q20o2">Educational videos</span></div>
-    <div class="q-opt" onclick="sel(this,'q20',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q20o3">Testimonials</span></div>
-    <div class="q-opt" onclick="sel(this,'q20',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q20o4">Behind the scenes</span></div>
-    <div class="q-opt" onclick="sel(this,'q20',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q20o5">Team videos</span></div>
-    <div class="q-opt" onclick="sel(this,'q20',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q20o6">Owner videos</span></div>
-    <div class="q-opt" onclick="sel(this,'q20',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q20o7">Offers / promos</span></div>
-    <div class="q-opt" onclick="sel(this,'q20',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q20o8">Trust building</span></div>
-    <div class="q-opt" onclick="sel(this,'q20',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q20o9">Trending / fun</span></div>
-    <div class="q-opt" onclick="sel(this,'q20',0)"><div class="q-check sq">✓</div><span class="q-opt-label" id="q20o10">Need guidance</span></div>
-  </div></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- SECTION 6 -->
-<div class="section-break" id="sb-6"><div class="sb-label" id="sb6-l">Section 6 of 6</div><div class="sb-title" id="sb6-t">Social & Process</div></div>
-
-<!-- Q21 -->
-<div class="screen" id="s-21">
-  <div class="q-card"><span class="q-num">21 / 26</span><div class="q-text" id="q21t">Share your social media links.</div><div class="q-hint" id="q21h">Instagram, TikTok, Facebook, website or any links.</div><textarea class="q-input" id="a21" rows="3" oninput="chk()"></textarea></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()"><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q22 -->
-<div class="screen" id="s-22">
-  <div class="q-card"><span class="q-num">22 / 26</span><div class="q-text" id="q22t">Who approves content and ads in your business?<span class="req">*</span></div><input class="q-input" id="a22" type="text" oninput="chk()"></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q23 -->
-<div class="screen" id="s-23">
-  <div class="q-card"><span class="q-num">23 / 26</span><div class="q-text" id="q23t">Have you worked with a marketing agency before?</div>
-  <div class="q-opts">
-    <div class="q-opt" onclick="sel(this,'q23',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q23o1">Yes</span></div>
-    <div class="q-opt" onclick="sel(this,'q23',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q23o2">No</span></div>
-  </div></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()"><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q24 -->
-<div class="screen" id="s-24">
-  <div class="q-card"><span class="q-num">24 / 26</span><div class="q-text" id="q24t">If yes, how was that experience?</div><textarea class="q-input" id="a24" rows="3" oninput="chk()"></textarea></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()"><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q25 -->
-<div class="screen" id="s-25">
-  <div class="q-card"><span class="q-num">25 / 26</span><div class="q-text" id="q25t">How did you hear about KABA LABS?<span class="req">*</span></div>
-  <div class="q-opts">
-    <div class="q-opt" onclick="sel(this,'q25',1)"><div class="q-check">✓</div><span class="q-opt-label">Instagram</span></div>
-    <div class="q-opt" onclick="sel(this,'q25',1)"><div class="q-check">✓</div><span class="q-opt-label">Facebook</span></div>
-    <div class="q-opt" onclick="sel(this,'q25',1)"><div class="q-check">✓</div><span class="q-opt-label">TikTok</span></div>
-    <div class="q-opt" onclick="sel(this,'q25',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q25o4">Referral / Friend</span></div>
-    <div class="q-opt" onclick="sel(this,'q25',1)"><div class="q-check">✓</div><span class="q-opt-label">Google</span></div>
-    <div class="q-opt" onclick="sel(this,'q25',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q25o6">Event / Conference</span></div>
-    <div class="q-opt" onclick="sel(this,'q25',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q25o7">Other</span></div>
-  </div></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="goNext()" disabled><span class="ct">Continue</span> →</button></div>
-</div>
-
-<!-- Q26 -->
-<div class="screen" id="s-26">
-  <div class="q-card"><span class="q-num">26 / 26</span><div class="q-text" id="q26t">How many employees?<span class="req">*</span></div>
-  <div class="q-opts">
-    <div class="q-opt" onclick="sel(this,'q26',1)"><div class="q-check">✓</div><span class="q-opt-label">1–5</span></div>
-    <div class="q-opt" onclick="sel(this,'q26',1)"><div class="q-check">✓</div><span class="q-opt-label">6–10</span></div>
-    <div class="q-opt" onclick="sel(this,'q26',1)"><div class="q-check">✓</div><span class="q-opt-label">11–20</span></div>
-    <div class="q-opt" onclick="sel(this,'q26',1)"><div class="q-check">✓</div><span class="q-opt-label">21–50</span></div>
-    <div class="q-opt" onclick="sel(this,'q26',1)"><div class="q-check">✓</div><span class="q-opt-label">51–100</span></div>
-    <div class="q-opt" onclick="sel(this,'q26',1)"><div class="q-check">✓</div><span class="q-opt-label" id="q26o6">100+</span></div>
-  </div></div>
-  <div class="nav-row"><button class="btn-back" onclick="goBack()">← <span class="bk">Back</span></button><button class="btn-next" onclick="submitForm()" disabled><span id="sbt">Submit</span> →</button></div>
-  <div id="status-msg"></div>
-</div>
-
-<!-- DONE -->
-<div class="screen" id="s-done">
-  <div class="done-icon">✦</div>
-  <h2 class="done-h" id="done-h">SUBMITTED.<br>WE'LL BE IN TOUCH.</h2>
-  <p class="done-sub" id="done-sub">Biniam will call you within 24 hours to discuss your growth system.</p>
-  <div class="done-card">
-    <p><strong>KABA LABS</strong><br>+251 913 864 659<br>kabadigitals@gmail.com<br>@kaba_digital_marketing</p>
+  <!-- SECTION HEADER (reused for all 6) -->
+  <div class="page" id="p-section">
+    <div class="sh-label" id="sh-label">Section 1 of 6</div>
+    <div class="sh-title" id="sh-title">Basic Info</div>
+    <button class="sh-next" id="t-begin" onclick="beginSection()">Begin →</button>
   </div>
-</div>
+
+  <!-- Q1 -->
+  <div class="page" id="p-1">
+    <div class="card">
+      <span class="qnum">01 / 26</span>
+      <div class="qtxt" id="t-q1">Full Name <span class="req">*</span></div>
+      <input class="inp" id="a1" type="text" oninput="chk(1)" placeholder="Your full name...">
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-1" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="page" id="p-2">
+    <div class="card">
+      <span class="qnum">02 / 26</span>
+      <div class="qtxt" id="t-q2">Business / Brand Name <span class="req">*</span></div>
+      <input class="inp" id="a2" type="text" oninput="chk(2)" placeholder="Your business name...">
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-2" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="page" id="p-3">
+    <div class="card">
+      <span class="qnum">03 / 26</span>
+      <div class="qtxt" id="t-q3">Business Phone Number <span class="req">*</span></div>
+      <input class="inp" id="a3" type="tel" oninput="chk(3)" placeholder="+251...">
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-3" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="page" id="p-4">
+    <div class="card">
+      <span class="qnum">04 / 26</span>
+      <div class="qtxt" id="t-q4">Business Location / Address <span class="req">*</span></div>
+      <input class="inp" id="a4" type="text" oninput="chk(4)" placeholder="e.g. Bole, Addis Ababa...">
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-4" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="page" id="p-5">
+    <div class="card">
+      <span class="qnum">05 / 26</span>
+      <div class="qtxt" id="t-q5">Preferred Contact Method <span class="req">*</span></div>
+      <div class="opts" id="o-5">
+        <div class="opt" onclick="pick(this,5,1)"><div class="dot">✓</div><span class="olabel">WhatsApp</span></div>
+        <div class="opt" onclick="pick(this,5,1)"><div class="dot">✓</div><span class="olabel">Telegram</span></div>
+        <div class="opt" onclick="pick(this,5,1)"><div class="dot">✓</div><span class="olabel" id="t-q5o1">Phone Call</span></div>
+        <div class="opt" onclick="pick(this,5,1)"><div class="dot">✓</div><span class="olabel">Email</span></div>
+        <div class="opt" onclick="pick(this,5,1)"><div class="dot">✓</div><span class="olabel" id="t-q5o2">Other</span></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-5" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="page" id="p-6">
+    <div class="card">
+      <span class="qnum">06 / 26</span>
+      <div class="qtxt" id="t-q6">Main products or services? <span class="req">*</span></div>
+      <textarea class="inp" id="a6" rows="3" oninput="chk(6)" placeholder="Describe what you sell or offer..."></textarea>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-6" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="page" id="p-7">
+    <div class="card">
+      <span class="qnum">07 / 26</span>
+      <div class="qtxt" id="t-q7">Does your business have branches?</div>
+      <div class="opts" id="o-7">
+        <div class="opt" onclick="pick(this,7,1)"><div class="dot">✓</div><span class="olabel" id="t-q7o1">Yes</span></div>
+        <div class="opt" onclick="pick(this,7,1)"><div class="dot">✓</div><span class="olabel" id="t-q7o2">No</span></div>
+        <div class="opt" onclick="pick(this,7,1)"><div class="dot">✓</div><span class="olabel" id="t-q7o3">In progress</span></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-7" onclick="next()"><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="page" id="p-8">
+    <div class="card">
+      <span class="qnum">08 / 26</span>
+      <div class="qtxt" id="t-q8">If yes, list the branch locations.</div>
+      <textarea class="inp" id="a8" rows="2" placeholder="Branch addresses..."></textarea>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-8" onclick="next()"><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="page" id="p-9">
+    <div class="card">
+      <span class="qnum">09 / 26</span>
+      <div class="qtxt" id="t-q9">Who is your ideal customer? <span class="req">*</span></div>
+      <div class="qhint" id="t-q9h">Age, location, gender if relevant, income level, type of customer you want most.</div>
+      <textarea class="inp" id="a9" rows="3" oninput="chk(9)" placeholder="Describe your ideal customer..."></textarea>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-9" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="page" id="p-10">
+    <div class="card">
+      <span class="qnum">10 / 26</span>
+      <div class="qtxt" id="t-q10">Why do customers choose you over competitors? <span class="req">*</span></div>
+      <textarea class="inp" id="a10" rows="3" oninput="chk(10)" placeholder="Your competitive advantage..."></textarea>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-10" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q11 -->
+  <div class="page" id="p-11">
+    <div class="card">
+      <span class="qnum">11 / 26</span>
+      <div class="qtxt" id="t-q11">Main marketing challenges right now? <span class="req">*</span></div>
+      <div class="opts2" id="o-11">
+        <div class="opt" onclick="pick(this,11,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q11o1">Low sales</span></div>
+        <div class="opt" onclick="pick(this,11,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q11o2">Low brand awareness</span></div>
+        <div class="opt" onclick="pick(this,11,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q11o3">Low retention</span></div>
+        <div class="opt" onclick="pick(this,11,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q11o4">Weak social</span></div>
+        <div class="opt" onclick="pick(this,11,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q11o5">Content creation</span></div>
+        <div class="opt" onclick="pick(this,11,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q11o6">Getting leads</span></div>
+        <div class="opt" onclick="pick(this,11,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q11o7">Not enough orders</span></div>
+        <div class="opt" onclick="pick(this,11,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q11o8">Other</span></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-11" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q12 -->
+  <div class="page" id="p-12">
+    <div class="card">
+      <span class="qnum">12 / 26</span>
+      <div class="qtxt" id="t-q12">Goals for the next 3 months? <span class="req">*</span></div>
+      <div class="opts2" id="o-12">
+        <div class="opt" onclick="pick(this,12,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q12o1">Increase sales</span></div>
+        <div class="opt" onclick="pick(this,12,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q12o2">Brand awareness</span></div>
+        <div class="opt" onclick="pick(this,12,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q12o3">More messages</span></div>
+        <div class="opt" onclick="pick(this,12,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q12o4">More leads</span></div>
+        <div class="opt" onclick="pick(this,12,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q12o5">Social growth</span></div>
+        <div class="opt" onclick="pick(this,12,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q12o6">More bookings</span></div>
+        <div class="opt" onclick="pick(this,12,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q12o7">Build trust</span></div>
+        <div class="opt" onclick="pick(this,12,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q12o8">Promote product</span></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-12" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q13 -->
+  <div class="page" id="p-13">
+    <div class="card">
+      <span class="qnum">13 / 26</span>
+      <div class="qtxt" id="t-q13">What results do you expect from KABA LABS? <span class="req">*</span></div>
+      <textarea class="inp" id="a13" rows="3" oninput="chk(13)" placeholder="Be specific..."></textarea>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-13" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q14 -->
+  <div class="page" id="p-14">
+    <div class="card">
+      <span class="qnum">14 / 26</span>
+      <div class="qtxt" id="t-q14">Who are your main competitors? <span class="req">*</span></div>
+      <div class="qhint" id="t-q14h">Names, Instagram, TikTok, Facebook or website links.</div>
+      <textarea class="inp" id="a14" rows="3" oninput="chk(14)" placeholder="Competitor names and links..."></textarea>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-14" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q15 -->
+  <div class="page" id="p-15">
+    <div class="card">
+      <span class="qnum">15 / 26</span>
+      <div class="qtxt" id="t-q15">What do you like or dislike about how competitors market?</div>
+      <textarea class="inp" id="a15" rows="3" placeholder="What they do well, what they do poorly..."></textarea>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-15" onclick="next()"><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q16 -->
+  <div class="page" id="p-16">
+    <div class="card">
+      <span class="qnum">16 / 26</span>
+      <div class="qtxt" id="t-q16">Brands whose content style you admire?</div>
+      <div class="qhint" id="t-q16h">Ethiopian or international. Include links if available.</div>
+      <textarea class="inp" id="a16" rows="2" placeholder="Brand names or links..."></textarea>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-16" onclick="next()"><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q17 -->
+  <div class="page" id="p-17">
+    <div class="card">
+      <span class="qnum">17 / 26</span>
+      <div class="qtxt" id="t-q17">Do you have existing branding?</div>
+      <div class="opts" id="o-17">
+        <div class="opt" onclick="pick(this,17,1)"><div class="dot">✓</div><span class="olabel" id="t-q17o1">Yes</span></div>
+        <div class="opt" onclick="pick(this,17,1)"><div class="dot">✓</div><span class="olabel" id="t-q17o2">No</span></div>
+        <div class="opt" onclick="pick(this,17,1)"><div class="dot">✓</div><span class="olabel" id="t-q17o3">Not sure</span></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-17" onclick="next()"><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q18 -->
+  <div class="page" id="p-18">
+    <div class="card">
+      <span class="qnum">18 / 26</span>
+      <div class="qtxt" id="t-q18">Share logo or brand files via link.</div>
+      <div class="qhint" id="t-q18h">Google Drive, Telegram, WhatsApp, Dropbox or any link.</div>
+      <input class="inp" id="a18" type="url" placeholder="https://...">
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-18" onclick="next()"><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q19 -->
+  <div class="page" id="p-19">
+    <div class="card">
+      <span class="qnum">19 / 26</span>
+      <div class="qtxt" id="t-q19">What are your brand's main colors?</div>
+      <input class="inp" id="a19" type="text" placeholder="e.g. Black and gold...">
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-19" onclick="next()"><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q20 -->
+  <div class="page" id="p-20">
+    <div class="card">
+      <span class="qnum">20 / 26</span>
+      <div class="qtxt" id="t-q20">What type of content do you want? <span class="req">*</span></div>
+      <div class="opts2" id="o-20">
+        <div class="opt" onclick="pick(this,20,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q20o1">Product showcase</span></div>
+        <div class="opt" onclick="pick(this,20,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q20o2">Educational</span></div>
+        <div class="opt" onclick="pick(this,20,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q20o3">Testimonials</span></div>
+        <div class="opt" onclick="pick(this,20,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q20o4">Behind scenes</span></div>
+        <div class="opt" onclick="pick(this,20,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q20o5">Team videos</span></div>
+        <div class="opt" onclick="pick(this,20,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q20o6">Owner videos</span></div>
+        <div class="opt" onclick="pick(this,20,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q20o7">Offers / promos</span></div>
+        <div class="opt" onclick="pick(this,20,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q20o8">Trust building</span></div>
+        <div class="opt" onclick="pick(this,20,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q20o9">Trending / fun</span></div>
+        <div class="opt" onclick="pick(this,20,0)"><div class="dot sq">✓</div><span class="olabel" id="t-q20o10">Need guidance</span></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-20" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q21 -->
+  <div class="page" id="p-21">
+    <div class="card">
+      <span class="qnum">21 / 26</span>
+      <div class="qtxt" id="t-q21">Share your social media links.</div>
+      <div class="qhint" id="t-q21h">Instagram, TikTok, Facebook, website or any links.</div>
+      <textarea class="inp" id="a21" rows="3" placeholder="Paste your links here..."></textarea>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-21" onclick="next()"><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q22 -->
+  <div class="page" id="p-22">
+    <div class="card">
+      <span class="qnum">22 / 26</span>
+      <div class="qtxt" id="t-q22">Who approves content and ads in your business? <span class="req">*</span></div>
+      <input class="inp" id="a22" type="text" oninput="chk(22)" placeholder="Name or role...">
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-22" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q23 -->
+  <div class="page" id="p-23">
+    <div class="card">
+      <span class="qnum">23 / 26</span>
+      <div class="qtxt" id="t-q23">Have you worked with a marketing agency before?</div>
+      <div class="opts" id="o-23">
+        <div class="opt" onclick="pick(this,23,1)"><div class="dot">✓</div><span class="olabel" id="t-q23o1">Yes</span></div>
+        <div class="opt" onclick="pick(this,23,1)"><div class="dot">✓</div><span class="olabel" id="t-q23o2">No</span></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-23" onclick="next()"><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q24 -->
+  <div class="page" id="p-24">
+    <div class="card">
+      <span class="qnum">24 / 26</span>
+      <div class="qtxt" id="t-q24">If yes, how was that experience?</div>
+      <textarea class="inp" id="a24" rows="3" placeholder="What worked, what didn't..."></textarea>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-24" onclick="next()"><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q25 -->
+  <div class="page" id="p-25">
+    <div class="card">
+      <span class="qnum">25 / 26</span>
+      <div class="qtxt" id="t-q25">How did you hear about KABA LABS? <span class="req">*</span></div>
+      <div class="opts" id="o-25">
+        <div class="opt" onclick="pick(this,25,1)"><div class="dot">✓</div><span class="olabel">Instagram</span></div>
+        <div class="opt" onclick="pick(this,25,1)"><div class="dot">✓</div><span class="olabel">Facebook</span></div>
+        <div class="opt" onclick="pick(this,25,1)"><div class="dot">✓</div><span class="olabel">TikTok</span></div>
+        <div class="opt" onclick="pick(this,25,1)"><div class="dot">✓</div><span class="olabel" id="t-q25o1">Referral / Friend</span></div>
+        <div class="opt" onclick="pick(this,25,1)"><div class="dot">✓</div><span class="olabel">Google</span></div>
+        <div class="opt" onclick="pick(this,25,1)"><div class="dot">✓</div><span class="olabel" id="t-q25o2">Event / Conference</span></div>
+        <div class="opt" onclick="pick(this,25,1)"><div class="dot">✓</div><span class="olabel" id="t-q25o3">Other</span></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-25" onclick="next()" disabled><span class="t-nx">Continue</span> →</button>
+    </div>
+  </div>
+
+  <!-- Q26 -->
+  <div class="page" id="p-26">
+    <div class="card">
+      <span class="qnum">26 / 26</span>
+      <div class="qtxt" id="t-q26">How many employees work in your business? <span class="req">*</span></div>
+      <div class="opts" id="o-26">
+        <div class="opt" onclick="pick(this,26,1)"><div class="dot">✓</div><span class="olabel">1–5</span></div>
+        <div class="opt" onclick="pick(this,26,1)"><div class="dot">✓</div><span class="olabel">6–10</span></div>
+        <div class="opt" onclick="pick(this,26,1)"><div class="dot">✓</div><span class="olabel">11–20</span></div>
+        <div class="opt" onclick="pick(this,26,1)"><div class="dot">✓</div><span class="olabel">21–50</span></div>
+        <div class="opt" onclick="pick(this,26,1)"><div class="dot">✓</div><span class="olabel">51–100</span></div>
+        <div class="opt" onclick="pick(this,26,1)"><div class="dot">✓</div><span class="olabel" id="t-q26o1">100+</span></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="bbk" onclick="back()">← <span class="t-bk">Back</span></button>
+      <button class="bnx" id="nx-26" onclick="submit()" disabled><span id="t-sub">Submit</span> →</button>
+    </div>
+  </div>
+
+  <!-- DONE -->
+  <div class="page" id="p-done">
+    <div class="dico">✦</div>
+    <div class="dh" id="t-dh">SUBMITTED.<br>WE'LL BE IN TOUCH.</div>
+    <p class="ds" id="t-ds">Biniam will call you within 24 hours to discuss your growth system.</p>
+    <div class="dcard">
+      <p><strong>KABA LABS</strong><br>+251 913 864 659<br>kabadigitals@gmail.com<br>@kaba_digital_marketing</p>
+    </div>
+  </div>
 
 </div>
 
 <script>
-const NOTION_DB = 'd98a09a3-a0c0-44cb-9759-cca5225a4c31';
-
-// Flow — only real screens, section breaks auto-show then skip
-const flow = [
-  'welcome',
-  '1','2','3','4','5',
-  '6','7','8','9','10',
-  '11','12','13',
-  '14','15','16',
-  '17','18','19','20',
-  '21','22','23','24','25','26',
-  'done'
-];
-
-const sectionBeforeStep = {
-  '1':  {label:'Section 1 of 6', title:'Basic Info'},
-  '6':  {label:'Section 2 of 6', title:'Business Info'},
-  '11': {label:'Section 3 of 6', title:'Goals & Challenges'},
-  '14': {label:'Section 4 of 6', title:'Competitors'},
-  '17': {label:'Section 5 of 6', title:'Brand & Content'},
-  '21': {label:'Section 6 of 6', title:'Social & Process'},
+// ── STATE ──
+// flow: 'welcome' → 'section' → 1..5 → 'section' → 6..10 → ... → 26 → 'done'
+const SECTIONS = {
+  1:  {en:['Section 1 of 6','Basic Info'],       am:['ክፍል 1 ከ 6','መሰረታዊ መረጃ']},
+  6:  {en:['Section 2 of 6','Business Info'],    am:['ክፍል 2 ከ 6','የድርጅት መረጃ']},
+  11: {en:['Section 3 of 6','Goals & Challenges'],am:['ክፍል 3 ከ 6','ግቦች እና ችግሮች']},
+  14: {en:['Section 4 of 6','Competitors'],      am:['ክፍል 4 ከ 6','ተወዳዳሪዎች']},
+  17: {en:['Section 5 of 6','Brand & Content'],  am:['ክፍል 5 ከ 6','ብራንድ እና ኮንተንት']},
+  21: {en:['Section 6 of 6','Social & Process'], am:['ክፍል 6 ከ 6','ሶሻል ሚዲያ እና ሂደት']},
 };
 
-// Optional questions (no required validation)
-const optional = new Set(['7','8','15','16','17','18','19','21','23','24']);
-
-let cur = 0;
+let step = 'welcome'; // 'welcome', 'section', 1-26, 'done'
+let pendingQ = null;  // which question comes after current section
 let lang = 'en';
 const ans = {};
 
-// ── SHOW ──
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(e => e.classList.remove('active'));
-  const el = document.getElementById('s-' + id);
-  if (el) el.classList.add('active');
+// ── NAVIGATION ──
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  document.getElementById('p-' + id).classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+  updateBar();
+  updateCounter(id);
 }
 
-function showSectionBreak(sb) {
-  const wrap = document.getElementById('sb-overlay');
-  if (!wrap) return;
-  document.getElementById('sb-label').textContent = sb.label;
-  document.getElementById('sb-title').textContent = sb.title;
-  // Force reflow then show
-  wrap.style.opacity = '1';
-  wrap.style.pointerEvents = 'all';
-  setTimeout(() => {
-    wrap.style.opacity = '0';
-    wrap.style.pointerEvents = 'none';
-  }, 900);
+function startQuiz() {
+  step = 'section';
+  pendingQ = 1;
+  showSection(1);
 }
 
-// ── NAV ──
-function goNext() {
-  saveAns();
-  if (cur >= flow.length - 1) return;
-  cur++;
-  const step = flow[cur];
-  updateProgress();
-  updateCounter();
-
-  // Check if this step has a section break before it
-  const sb = sectionBeforeStep[step];
-  showScreen(step);
-  chk();
-  if (sb) {
-    showSectionBreak(sb);
-  }
-  window.scrollTo({top: 0, behavior: 'smooth'});
+function showSection(q) {
+  const s = SECTIONS[q][lang];
+  document.getElementById('sh-label').textContent = s[0];
+  document.getElementById('sh-title').textContent = s[1];
+  show('section');
 }
 
-function goBack() {
-  if (cur <= 0) return;
-  cur--;
-  const step = flow[cur];
-  updateProgress();
-  updateCounter();
-  showScreen(step);
-  if (step !== 'welcome' && step !== 'done') chk();
-  window.scrollTo({top: 0, behavior: 'smooth'});
+function beginSection() {
+  step = pendingQ;
+  show(step);
 }
 
-// ── SAVE ──
-function saveAns() {
-  const step = flow[cur];
-  if (!step || step === 'welcome' || step === 'done') return;
+function next() {
+  // save text answers
   const inp = document.getElementById('a' + step);
   if (inp) ans['q' + step] = inp.value.trim();
+
+  const n = step + 1;
+  if (n > 26) { doSubmit(); return; }
+
+  // check if next question starts a new section
+  if (SECTIONS[n]) {
+    pendingQ = n;
+    step = 'section';
+    showSection(n);
+  } else {
+    step = n;
+    show(step);
+  }
+}
+
+function back() {
+  if (step === 'welcome') return;
+  if (step === 'section') {
+    // go back to previous question or welcome
+    if (pendingQ === 1) { step = 'welcome'; show('welcome'); }
+    else { step = pendingQ - 1; show(step); }
+    return;
+  }
+  if (step === 'done') return;
+  const prev = step - 1;
+  if (prev < 1) { step = 'welcome'; show('welcome'); return; }
+  step = prev;
+  show(step);
+}
+
+function doSubmit() {
+  const inp = document.getElementById('a26');
+  if (inp) ans['q26'] = inp.value.trim();
+  console.log('KABA LABS Submission:', ans);
+  step = 'done';
+  show('done');
+}
+
+function submit() { doSubmit(); }
+
+// ── VALIDATION ──
+function chk(q) {
+  const inp = document.getElementById('a' + q);
+  const btn = document.getElementById('nx-' + q);
+  if (!inp || !btn) return;
+  btn.disabled = inp.value.trim().length < 2;
+}
+
+function pick(el, q, single) {
+  if (single) {
+    document.querySelectorAll('#o-' + q + ' .opt').forEach(o => o.classList.remove('sel'));
+    el.classList.add('sel');
+    ans['q' + q] = el.querySelector('.olabel').textContent.trim();
+  } else {
+    el.classList.toggle('sel');
+    ans['q' + q] = [...document.querySelectorAll('#o-' + q + ' .opt.sel')]
+      .map(o => o.querySelector('.olabel').textContent.trim());
+  }
+  // enable button if at least one selected
+  const btn = document.getElementById('nx-' + q);
+  if (btn) btn.disabled = !document.querySelector('#o-' + q + ' .opt.sel');
 }
 
 // ── PROGRESS ──
-function updateProgress() {
-  const total = flow.length - 2; // exclude welcome and done
-  const pos = Math.max(0, cur - 1);
-  const pct = Math.round((pos / total) * 100);
-  document.getElementById('progress-fill').style.width = Math.min(pct, 100) + '%';
+function updateBar() {
+  const fill = document.getElementById('bar-fill');
+  if (step === 'welcome' || step === 'section') { fill.style.width = '0%'; return; }
+  if (step === 'done') { fill.style.width = '100%'; return; }
+  fill.style.width = Math.round((step / 26) * 100) + '%';
 }
 
-function updateCounter() {
-  const step = flow[cur];
-  const el = document.getElementById('step-counter');
-  if (!el) return;
-  if (step === 'welcome' || step === 'done') { el.textContent = ''; return; }
-  const n = parseInt(step);
-  if (!isNaN(n)) el.textContent = n + ' / 26';
-  else el.textContent = '';
+function updateCounter(id) {
+  const el = document.getElementById('counter');
+  if (id === 'welcome' || id === 'section' || id === 'done') { el.textContent = ''; return; }
+  el.textContent = id + ' / 26';
 }
 
-// ── SELECTION ──
-function sel(el, grp, single) {
-  if (single) {
-    document.querySelectorAll('[data-grp="' + grp + '"]').forEach(e => e.classList.remove('selected'));
-    el.setAttribute('data-grp', grp);
-    el.classList.add('selected');
-    ans[grp] = el.querySelector('.q-opt-label').textContent.trim();
-  } else {
-    el.setAttribute('data-grp', grp);
-    el.classList.toggle('selected');
-    ans[grp] = [...document.querySelectorAll('[data-grp="' + grp + '"].selected')]
-      .map(e => e.querySelector('.q-opt-label').textContent.trim());
-  }
-  chk();
-}
-
-// ── REQUIRED CHECK ──
-function chk() {
-  const step = flow[cur];
-  if (!step || step === 'welcome' || step === 'done') return;
-  const screen = document.getElementById('s-' + step);
-  if (!screen) return;
-  const btn = screen.querySelector('.btn-next');
-  if (!btn) return;
-
-  if (optional.has(step)) { btn.disabled = false; return; }
-
-  const inp = document.getElementById('a' + step);
-  if (inp) { btn.disabled = inp.value.trim().length < 2; return; }
-
-  const hasSel = screen.querySelector('.q-opt.selected');
-  btn.disabled = !hasSel;
-}
-
-// ── SUBMIT ──
-async function submitForm() {
-  saveAns();
-  const btn = document.querySelector('#s-26 .btn-next');
-  if (btn) btn.disabled = true;
-
-  // Go to done screen
-  cur = flow.length - 1;
-  updateProgress();
-  updateCounter();
-  showScreen('done');
-  window.scrollTo({top: 0, behavior: 'smooth'});
-
-  // Log answers for backend connection
-  console.log('KABA LABS Onboarding Submission:', ans);
-}
-
-// ── LANG ──
+// ── TRANSLATIONS ──
 const T = {
   en: {
-    'w-ey':'Client Onboarding','w-h':"LET'S BUILD YOUR SYSTEM.",
-    'w-sub':'This helps KABA LABS understand your business, goals, competitors, and brand so we can build the right growth system for you.',
-    'w-m1':'26 questions','w-m2':'6 sections','w-m3':'~5 minutes','w-btn':'START NOW →',
-    'q1t':'Full Name *','q2t':'Business / Brand Name *','q3t':'Phone Number *','q4t':'Business Location *',
-    'q5t':'Preferred Contact Method *','q5o3':'Phone Call','q5o5':'Other',
-    'q6t':'Main products or services? *','q7t':'Does your business have branches?',
-    'q7o1':'Yes','q7o2':'No','q7o3':'In progress','q8t':'If yes, list branch locations.',
-    'q9t':'Who is your ideal customer? *','q9h':'Age, location, gender, income level.',
-    'q10t':'Why do customers choose you over competitors? *',
-    'q11t':'Main marketing challenges right now? *',
-    'q11o1':'Low sales','q11o2':'Low brand awareness','q11o3':'Low retention','q11o4':'Weak social','q11o5':'Content creation','q11o6':'Getting leads','q11o7':'Not enough orders','q11o8':'Other',
-    'q12t':'Goals for the next 3 months? *',
-    'q12o1':'Increase sales','q12o2':'Brand awareness','q12o3':'More messages','q12o4':'More leads','q12o5':'Social growth','q12o6':'More bookings','q12o7':'Build trust','q12o8':'Promote a product',
-    'q13t':'What results do you expect from KABA LABS? *',
-    'q14t':'Who are your main competitors? *','q14h':'Names, Instagram, TikTok, Facebook or website links.',
-    'q15t':'What do you like or dislike about how competitors market?',
-    'q16t':'Brands whose content style you admire?','q16h':'Ethiopian or international. Include links.',
-    'q17t':'Do you have existing branding?','q17o1':'Yes','q17o2':'No','q17o3':'Not sure',
-    'q18t':'Share logo or brand files via link.','q18h':'Google Drive, Telegram, WhatsApp, Dropbox.',
-    'q19t':"Brand's main colors?",'q20t':'What type of content do you want? *',
-    'q20o1':'Product showcase','q20o2':'Educational','q20o3':'Testimonials','q20o4':'Behind the scenes',
-    'q20o5':'Team videos','q20o6':'Owner videos','q20o7':'Offers / promos','q20o8':'Trust building','q20o9':'Trending','q20o10':'Need guidance',
-    'q21t':'Social media links.','q21h':'Instagram, TikTok, Facebook, website.',
-    'q22t':'Who approves content and ads? *',
-    'q23t':'Worked with a marketing agency before?','q23o1':'Yes','q23o2':'No',
-    'q24t':'If yes, how was that experience?','q25t':'How did you hear about KABA LABS? *',
-    'q25o4':'Referral / Friend','q25o6':'Event','q25o7':'Other',
-    'q26t':'How many employees? *','q26o6':'100+',
-    'done-h':"SUBMITTED.
-WE'LL BE IN TOUCH.",'done-sub':'Biniam will call you within 24 hours.',
-    bk:'Back', ct:'Continue', sbt:'Submit'
+    'ey':'Client Onboarding',
+    'wh':"LET'S BUILD YOUR SYSTEM.",
+    'ws':'This helps KABA LABS understand your business, goals, competitors, and brand so we can build the right growth system for you.',
+    'm1':'26 questions','m2':'6 sections','m3':'~5 minutes','sbtn':'START NOW →','begin':'Begin →',
+    'q1':'Full Name','q2':'Business / Brand Name','q3':'Business Phone Number','q4':'Business Location / Address',
+    'q5':'Preferred Contact Method','q5o1':'Phone Call','q5o2':'Other',
+    'q6':'Main products or services?','q7':'Does your business have branches?',
+    'q7o1':'Yes','q7o2':'No','q7o3':'In progress','q8':'If yes, list branch locations.',
+    'q9':'Who is your ideal customer?','q9h':'Age, location, gender, income level, type of customer you want most.',
+    'q10':'Why do customers choose you over competitors?',
+    'q11':'Main marketing challenges right now?',
+    'q11o1':'Low sales','q11o2':'Low brand awareness','q11o3':'Low retention','q11o4':'Weak social',
+    'q11o5':'Content creation','q11o6':'Getting leads','q11o7':'Not enough orders','q11o8':'Other',
+    'q12':'Goals for the next 3 months?',
+    'q12o1':'Increase sales','q12o2':'Brand awareness','q12o3':'More messages','q12o4':'More leads',
+    'q12o5':'Social growth','q12o6':'More bookings','q12o7':'Build trust','q12o8':'Promote product',
+    'q13':'What results do you expect from KABA LABS?',
+    'q14':'Who are your main competitors?','q14h':'Names, Instagram, TikTok, Facebook or website links.',
+    'q15':'What do you like or dislike about how competitors market?',
+    'q16':'Brands whose content style you admire?','q16h':'Ethiopian or international. Include links.',
+    'q17':'Do you have existing branding?','q17o1':'Yes','q17o2':'No','q17o3':'Not sure',
+    'q18':'Share logo or brand files via link.','q18h':'Google Drive, Telegram, WhatsApp, Dropbox or any link.',
+    'q19':"What are your brand's main colors?",'q20':'What type of content do you want?',
+    'q20o1':'Product showcase','q20o2':'Educational','q20o3':'Testimonials','q20o4':'Behind scenes',
+    'q20o5':'Team videos','q20o6':'Owner videos','q20o7':'Offers / promos','q20o8':'Trust building',
+    'q20o9':'Trending / fun','q20o10':'Need guidance',
+    'q21':'Share your social media links.','q21h':'Instagram, TikTok, Facebook, website or any links.',
+    'q22':'Who approves content and ads?','q23':'Worked with a marketing agency before?',
+    'q23o1':'Yes','q23o2':'No','q24':'If yes, how was that experience?',
+    'q25':'How did you hear about KABA LABS?','q25o1':'Referral / Friend','q25o2':'Event / Conference','q25o3':'Other',
+    'q26':'How many employees?','q26o1':'100+',
+    'dh':"SUBMITTED.\nWE'LL BE IN TOUCH.",'ds':'Biniam will call you within 24 hours.',
+    'bk':'Back','nx':'Continue','sub':'Submit',
   },
   am: {
-    'w-ey':'የደንበኛ መቀበያ ቅጽ','w-h':'ስርዓቶን እንገነባ።',
-    'w-sub':'ይህ ቅጽ KABA LABS ስለ ቢዝነሶ፣ ግቦቶ፣ ተወዳዳሪዎቶ እና ብራንድ ለማወቅ ይረዳናል።',
-    'w-m1':'26 ጥያቄዎች','w-m2':'6 ክፍሎች','w-m3':'~5 ደቂቃ','w-btn':'አሁን ጀምር →',
-    'q1t':'ሙሉ ስም *','q2t':'የድርጅት / የብራንድ ስም *','q3t':'ስልክ ቁጥር *','q4t':'የድርጅቱ አድራሻ *',
-    'q5t':'ለመገናኘት የሚመርጡት *','q5o3':'ስልክ ጥሪ','q5o5':'ሌላ',
-    'q6t':'ዋና ምርቶች ወይም አገልግሎቶች? *','q7t':'ድርጅቱ ቅርንጫፎች አሉት?',
-    'q7o1':'አዎ','q7o2':'የሉም','q7o3':'በሂደት ላይ','q8t':'ካሉ፣ አድራሻቸውን ይፃፉ።',
-    'q9t':'ተመራጭ ደንበኛዎ? *','q9h':'ዕድሜ፣ አካባቢ፣ ፆታ፣ የገቢ ደረጃ።',
-    'q10t':'ደንበኞች ድርጅትዎን ለምን ይመርጣሉ? *',
-    'q11t':'አሁን ዋና የገበያ ችግሮችዎ? *',
-    'q11o1':'ዝቅተኛ ሽያጭ','q11o2':'ዝቅተኛ እውቅና','q11o3':'ዝቅተኛ ደንበኛ','q11o4':'ደካማ ሶሻል','q11o5':'ኮንተንት ፈጠራ','q11o6':'Leads ማግኘት','q11o7':'ትዕዛዝ አለመኖር','q11o8':'ሌላ',
-    'q12t':'ለቀጣዮቹ 3 ወራት ዋና ግቦችዎ? *',
-    'q12o1':'ሽያጭ መጨመር','q12o2':'ብራንድ ታዋቂነት','q12o3':'ተጨማሪ መልዕክቶች','q12o4':'ተጨማሪ Leads','q12o5':'ሶሻል እድገት','q12o6':'ቦታ ማስያዝ','q12o7':'እምነት መገንባት','q12o8':'ምርት ማስተዋወቅ',
-    'q13t':'ከKABA LABS የሚጠብቁት ውጤት? *',
-    'q14t':'ዋና ተወዳዳሪዎችዎ? *','q14h':'ስሞች፣ Instagram፣ TikTok፣ Facebook ወይም website።',
-    'q15t':'ተወዳዳሪዎቹ ምን ጥሩ ወይም ደካማ ያደርጋሉ?',
-    'q16t':'ይዘቱ የሚወዱት ብራንዶች?','q16h':'ኢትዮጵያዊ ወይም ዓለም አቀፍ።',
-    'q17t':'Branding አለዎት?','q17o1':'አዎ','q17o2':'የለኝም','q17o3':'እርግጠኛ አይደለሁም',
-    'q18t':'የሎጎ ወይም ፋይሎችን ሊንክ ያጋሩ።','q18h':'Google Drive, Telegram, WhatsApp, Dropbox።',
-    'q19t':'የብራንድ ዋና ቀለሞች?','q20t':'ምን አይነት ይዘት ይፈልጋሉ? *',
-    'q20o1':'የምርት ማሳያ','q20o2':'ትምህርታዊ','q20o3':'ምስክርነት','q20o4':'ከጀርባ ያለ ሂደት',
-    'q20o5':'የቡድን ቪዲዮ','q20o6':'የባለቤት ቪዲዮ','q20o7':'ቅናሽ / ፕሮሞሽን','q20o8':'እምነት','q20o9':'አዝናኝ','q20o10':'መምሪያ እፈልጋለሁ',
-    'q21t':'የሶሻል ሚዲያ ሊንኮች።','q21h':'Instagram፣ TikTok፣ Facebook፣ website።',
-    'q22t':'ይዘትን እና ማስታወቂያ የሚያፀድቀው ማነው? *',
-    'q23t':'ቀደም ሲል ከኤጀንሲ ጋር ሰርተዋል?','q23o1':'አዎ','q23o2':'አላውቅም',
-    'q24t':'አዎ ከሆነ፣ ተሞክሮዎ?','q25t':'KABA LABSን እንዴት ሰሙ? *',
-    'q25o4':'Referral / ጓደኛ','q25o6':'Event','q25o7':'ሌላ',
-    'q26t':'ሰራተኞች ብዛት? *','q26o6':'ከ 100 በላይ',
-    'done-h':'ቅጹ ተልኳል።
-ቶሎ እናገኝዎታለን።','done-sub':'Biniam በ24 ሰዓታት ውስጥ ደውሎ ያነጋግሮታል።',
-    bk:'ተመለስ', ct:'ቀጥል', sbt:'ላክ'
+    'ey':'የደንበኛ መቀበያ ቅጽ','wh':'ስርዓቶን እንገነባ።',
+    'ws':'ይህ ቅጽ KABA LABS ስለ ቢዝነሶ፣ ግቦቶ፣ ተወዳዳሪዎቶ እና ብራንድ ለማወቅ ይረዳናል።',
+    'm1':'26 ጥያቄዎች','m2':'6 ክፍሎች','m3':'~5 ደቂቃ','sbtn':'አሁን ጀምር →','begin':'ጀምር →',
+    'q1':'ሙሉ ስም','q2':'የድርጅት / የብራንድ ስም','q3':'ስልክ ቁጥር','q4':'የድርጅቱ አድራሻ',
+    'q5':'ለመገናኘት የሚመርጡት','q5o1':'ስልክ ጥሪ','q5o2':'ሌላ',
+    'q6':'ዋና ምርቶች ወይም አገልግሎቶች?','q7':'ድርጅቱ ቅርንጫፎች አሉት?',
+    'q7o1':'አዎ','q7o2':'የሉም','q7o3':'በሂደት ላይ','q8':'ካሉ፣ አድራሻቸውን ይፃፉ።',
+    'q9':'ተመራጭ ደንበኛዎ?','q9h':'ዕድሜ፣ አካባቢ፣ ፆታ፣ የገቢ ደረጃ።',
+    'q10':'ደንበኞች ድርጅትዎን ለምን ይመርጣሉ?',
+    'q11':'አሁን ዋና የገበያ ችግሮችዎ?',
+    'q11o1':'ዝቅተኛ ሽያጭ','q11o2':'ዝቅተኛ እውቅና','q11o3':'ዝቅተኛ ደንበኛ','q11o4':'ደካማ ሶሻል',
+    'q11o5':'ኮንተንት ፈጠራ','q11o6':'Leads ማግኘት','q11o7':'ትዕዛዝ አለመኖር','q11o8':'ሌላ',
+    'q12':'ለቀጣዮቹ 3 ወራት ዋና ግቦችዎ?',
+    'q12o1':'ሽያጭ መጨመር','q12o2':'ብራንድ ታዋቂነት','q12o3':'ተጨማሪ መልዕክቶች','q12o4':'ተጨማሪ Leads',
+    'q12o5':'ሶሻል እድገት','q12o6':'ቦታ ማስያዝ','q12o7':'እምነት መገንባት','q12o8':'ምርት ማስተዋወቅ',
+    'q13':'ከKABA LABS የሚጠብቁት ውጤት?',
+    'q14':'ዋና ተወዳዳሪዎችዎ?','q14h':'ስሞች፣ Instagram፣ TikTok፣ Facebook ወይም website።',
+    'q15':'ተወዳዳሪዎቹ ምን ጥሩ ወይም ደካማ ያደርጋሉ?',
+    'q16':'ይዘቱ የሚወዱት ብራንዶች?','q16h':'ኢትዮጵያዊ ወይም ዓለም አቀፍ።',
+    'q17':'Branding አለዎት?','q17o1':'አዎ','q17o2':'የለኝም','q17o3':'እርግጠኛ አይደለሁም',
+    'q18':'ሎጎ ወይም ፋይሎችን ሊንክ ያጋሩ።','q18h':'Google Drive, Telegram, WhatsApp, Dropbox።',
+    'q19':'የብራንድ ዋና ቀለሞች?','q20':'ምን አይነት ይዘት ይፈልጋሉ?',
+    'q20o1':'የምርት ማሳያ','q20o2':'ትምህርታዊ','q20o3':'ምስክርነት','q20o4':'ከጀርባ ያለ',
+    'q20o5':'የቡድን ቪዲዮ','q20o6':'የባለቤት ቪዲዮ','q20o7':'ቅናሽ / ፕሮሞሽን','q20o8':'እምነት',
+    'q20o9':'አዝናኝ','q20o10':'መምሪያ እፈልጋለሁ',
+    'q21':'የሶሻል ሚዲያ ሊንኮች።','q21h':'Instagram፣ TikTok፣ Facebook፣ website።',
+    'q22':'ይዘትን እና ማስታወቂያ የሚያፀድቀው ማነው?','q23':'ቀደም ሲል ከኤጀንሲ ጋር ሰርተዋል?',
+    'q23o1':'አዎ','q23o2':'አላውቅም','q24':'አዎ ከሆነ፣ ተሞክሮዎ?',
+    'q25':'KABA LABSን እንዴት ሰሙ?','q25o1':'Referral / ጓደኛ','q25o2':'Event','q25o3':'ሌላ',
+    'q26':'ሰራተኞች ብዛት?','q26o1':'ከ 100 በላይ',
+    'dh':'ቅጹ ተልኳል።\nቶሎ እናገኝዎታለን።','ds':'Biniam በ24 ሰዓታት ውስጥ ደውሎ ያነጋግሮታል።',
+    'bk':'ተመለስ','nx':'ቀጥል','sub':'ላክ',
   }
 };
 
 function setLang(l) {
   lang = l;
-  document.querySelectorAll('.lang-btn').forEach(b =>
-    b.classList.toggle('active', b.textContent.trim() === (l === 'en' ? 'EN' : 'አማ'))
-  );
+  document.querySelectorAll('.lb').forEach(b => b.classList.toggle('on', b.textContent.trim() === (l==='en'?'EN':'አማ')));
   const t = T[l];
-  Object.keys(t).forEach(id => {
-    if (['bk','ct','sbt'].includes(id)) return;
+  // map of id prefix → translation key
+  const map = {
+    't-ey':'ey','t-wh':'wh','t-ws':'ws','t-m1':'m1','t-m2':'m2','t-m3':'m3',
+    't-sbtn':'sbtn','t-begin':'begin',
+    't-q1':'q1','t-q2':'q2','t-q3':'q3','t-q4':'q4','t-q5':'q5','t-q5o1':'q5o1','t-q5o2':'q5o2',
+    't-q6':'q6','t-q7':'q7','t-q7o1':'q7o1','t-q7o2':'q7o2','t-q7o3':'q7o3','t-q8':'q8',
+    't-q9':'q9','t-q9h':'q9h','t-q10':'q10',
+    't-q11':'q11','t-q11o1':'q11o1','t-q11o2':'q11o2','t-q11o3':'q11o3','t-q11o4':'q11o4',
+    't-q11o5':'q11o5','t-q11o6':'q11o6','t-q11o7':'q11o7','t-q11o8':'q11o8',
+    't-q12':'q12','t-q12o1':'q12o1','t-q12o2':'q12o2','t-q12o3':'q12o3','t-q12o4':'q12o4',
+    't-q12o5':'q12o5','t-q12o6':'q12o6','t-q12o7':'q12o7','t-q12o8':'q12o8',
+    't-q13':'q13','t-q14':'q14','t-q14h':'q14h','t-q15':'q15','t-q16':'q16','t-q16h':'q16h',
+    't-q17':'q17','t-q17o1':'q17o1','t-q17o2':'q17o2','t-q17o3':'q17o3',
+    't-q18':'q18','t-q18h':'q18h','t-q19':'q19','t-q20':'q20',
+    't-q20o1':'q20o1','t-q20o2':'q20o2','t-q20o3':'q20o3','t-q20o4':'q20o4','t-q20o5':'q20o5',
+    't-q20o6':'q20o6','t-q20o7':'q20o7','t-q20o8':'q20o8','t-q20o9':'q20o9','t-q20o10':'q20o10',
+    't-q21':'q21','t-q21h':'q21h','t-q22':'q22','t-q23':'q23','t-q23o1':'q23o1','t-q23o2':'q23o2',
+    't-q24':'q24','t-q25':'q25','t-q25o1':'q25o1','t-q25o2':'q25o2','t-q25o3':'q25o3',
+    't-q26':'q26','t-q26o1':'q26o1',
+    't-dh':'dh','t-ds':'ds','t-sub':'sub',
+  };
+  Object.keys(map).forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.textContent = t[id];
+    if (el && t[map[id]] !== undefined) el.textContent = t[map[id]];
   });
-  document.querySelectorAll('.bk').forEach(e => e.textContent = t.bk);
-  document.querySelectorAll('.ct').forEach(e => e.textContent = t.ct);
-  const sb = document.getElementById('sbt'); if (sb) sb.textContent = t.sbt;
+  document.querySelectorAll('.t-bk').forEach(e => e.textContent = t.bk);
+  document.querySelectorAll('.t-nx').forEach(e => e.textContent = t.nx);
+  // update section header if visible
+  if (step === 'section' && pendingQ) showSection(pendingQ);
 }
-
-// ── INIT ──
-// Welcome screen is already active via HTML class, just update UI
-updateProgress();
-updateCounter();
 </script>
 </body>
 </html>
-<!-- deploy Wed May 27 04:35:04 UTC 2026 -->
