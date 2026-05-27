@@ -631,14 +631,8 @@ async function doSubmit() {
   show('done');
 
   // Post to Notion in background
-  const NOTION_TOKEN = 'ntn_q61648676659GGuch3NaZtW2IMEAMpVGgr6EhqNt2ol0II';
-  const DB_ID = '3cbe215d-00ac-42cb-95b9-cea5fcbf4aac';
-
-  function txt(val) {
-    return [{ type: 'text', text: { content: String(val || '') } }];
-  }
-
-  const props = {
+  // props built server-side in /api/submit
+  const _unused = {
     'Full Name':         { title: txt(ans.q1 || '') },
     'Business Name':     { rich_text: txt(ans.q2 || '') },
     'Phone':             { phone_number: ans.q3 || null },
@@ -672,21 +666,16 @@ async function doSubmit() {
   Object.keys(props).forEach(k => { if (props[k] === undefined) delete props[k]; });
 
   try {
-    await fetch('https://api.notion.com/v1/pages', {
+    const r = await fetch('/api/submit', {
       method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + NOTION_TOKEN,
-        'Content-Type': 'application/json',
-        'Notion-Version': '2022-06-28',
-      },
-      body: JSON.stringify({
-        parent: { database_id: DB_ID },
-        properties: props
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ans)
     });
-    console.log('Submitted to Notion ✅');
+    const data = await r.json();
+    if (data.success) console.log('Submitted to Notion ✅', data.id);
+    else console.error('Notion error:', data.error);
   } catch(e) {
-    console.error('Notion error:', e);
+    console.error('Submit error:', e);
   }
 }
 
