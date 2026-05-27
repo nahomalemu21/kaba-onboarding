@@ -626,44 +626,8 @@ async function doSubmit() {
   const inp = document.getElementById('a26');
   if (inp) ans['q26'] = inp.value.trim();
 
-  // Show done screen immediately
   step = 'done';
   show('done');
-
-  // Post to Notion in background
-  // props built server-side in /api/submit
-  const _unused = {
-    'Full Name':         { title: txt(ans.q1 || '') },
-    'Business Name':     { rich_text: txt(ans.q2 || '') },
-    'Phone':             { phone_number: ans.q3 || null },
-    'Location':          { rich_text: txt(ans.q4 || '') },
-    'Contact Method':    ans.q5  ? { select: { name: ans.q5 } }  : undefined,
-    'Products / Services': { rich_text: txt(ans.q6 || '') },
-    'Has Branches':      ans.q7  ? { select: { name: ans.q7 } }  : undefined,
-    'Branch Locations':  { rich_text: txt(ans.q8 || '') },
-    'Ideal Customer':    { rich_text: txt(ans.q9 || '') },
-    'Why Choose Them':   { rich_text: txt(ans.q10 || '') },
-    'Main Challenges':   { multi_select: (Array.isArray(ans.q11) ? ans.q11 : []).map(n => ({ name: n })) },
-    '3-Month Goals':     { multi_select: (Array.isArray(ans.q12) ? ans.q12 : []).map(n => ({ name: n })) },
-    'Expected Results':  { rich_text: txt(ans.q13 || '') },
-    'Main Competitors':  { rich_text: txt(ans.q14 || '') },
-    'Competitor Feedback': { rich_text: txt(ans.q15 || '') },
-    'Admired Brands':    { rich_text: txt(ans.q16 || '') },
-    'Has Branding':      ans.q17 ? { select: { name: ans.q17 } } : undefined,
-    'Brand Files Link':  ans.q18 ? { url: ans.q18 } : undefined,
-    'Brand Colors':      { rich_text: txt(ans.q19 || '') },
-    'Content Types Wanted': { multi_select: (Array.isArray(ans.q20) ? ans.q20 : []).map(n => ({ name: n })) },
-    'Social Media Links': { rich_text: txt(ans.q21 || '') },
-    'Content Approver':  { rich_text: txt(ans.q22 || '') },
-    'Worked With Agency': ans.q23 ? { select: { name: ans.q23 } } : undefined,
-    'Agency Experience': { rich_text: txt(ans.q24 || '') },
-    'How Heard of KABA': ans.q25 ? { select: { name: ans.q25 } } : undefined,
-    'Team Size':         ans.q26 ? { select: { name: ans.q26 } } : undefined,
-    'Status':            { select: { name: 'New 🆕' } },
-  };
-
-  // Remove undefined props
-  Object.keys(props).forEach(k => { if (props[k] === undefined) delete props[k]; });
 
   try {
     const r = await fetch('/api/submit', {
@@ -672,8 +636,7 @@ async function doSubmit() {
       body: JSON.stringify(ans)
     });
     const data = await r.json();
-    if (data.success) console.log('Submitted to Notion ✅', data.id);
-    else console.error('Notion error:', data.error);
+    console.log(data.success ? 'Submitted to Notion ✅' : 'Error: ' + JSON.stringify(data));
   } catch(e) {
     console.error('Submit error:', e);
   }
